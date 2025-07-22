@@ -22,7 +22,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const LOGIN_MUTATION = gql`
   mutation Login($email: String!, $password: String!) {
     login(loginInput: { email: $email, password: $password }) {
-      access_token
+      accessToken
       user {
         id
         email
@@ -34,8 +34,8 @@ const LOGIN_MUTATION = gql`
 
 const REGISTER_MUTATION = gql`
   mutation Register($name: String!, $email: String!, $password: String!) {
-    register(registerInput: { name: $name, email: $email, password: $password }) {
-      access_token
+    signup(createUserInput: { name: $name, email: $email, password: $password }) {
+      accessToken
       user {
         id
         email
@@ -76,16 +76,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         variables: { email, password },
       });
 
-      const { access_token, user } = data.login;
+      const { accessToken, user } = data.login;
 
-      setToken(access_token);
+      setToken(accessToken);
       setUser(user);
 
-      localStorage.setItem('token', access_token);
+      localStorage.setItem('token', accessToken);
       localStorage.setItem('user', JSON.stringify(user));
     } catch (err) {
       setError('Falha ao fazer login. Verifique suas credenciais.');
       console.error('Login error:', err);
+      throw err; // Propagar o erro para que seja capturado na página
     } finally {
       setLoading(false);
     }
@@ -100,16 +101,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         variables: { name, email, password },
       });
 
-      const { access_token, user } = data.register;
+      const { accessToken, user } = data.signup;
 
-      setToken(access_token);
+      setToken(accessToken);
       setUser(user);
 
-      localStorage.setItem('token', access_token);
+      localStorage.setItem('token', accessToken);
       localStorage.setItem('user', JSON.stringify(user));
     } catch (err) {
       setError('Falha ao registrar. Tente novamente.');
       console.error('Register error:', err);
+      throw err; // Propagar o erro para que seja capturado na página
     } finally {
       setLoading(false);
     }
