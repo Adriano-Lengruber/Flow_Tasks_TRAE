@@ -5,6 +5,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { join } from 'path';
 import { AuthModule } from './auth/auth.module';
 import { ProjectsModule } from './projects/projects.module';
@@ -16,6 +17,7 @@ import { CommentsModule } from './comments/comments.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
@@ -28,12 +30,29 @@ import { CommentsModule } from './comments/comments.module';
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'better-sqlite3',
-        database: 'database.sqlite',
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true, // Não usar em produção
-      }),
+      useFactory: (configService: ConfigService) => {
+        const dbType = configService.get('DB_TYPE') || 'better-sqlite3';
+        
+        if (dbType === 'postgres') {
+          return {
+            type: 'postgres',
+            host: configService.get('POSTGRES_HOST'),
+            port: +configService.get('POSTGRES_PORT'),
+            username: configService.get('POSTGRES_USER'),
+            password: configService.get('POSTGRES_PASSWORD'),
+            database: configService.get('POSTGRES_DB'),
+            entities: [__dirname + '/**/*.entity{.ts,.js}'],
+            synchronize: true, // Não usar em produção
+          };
+        } else {
+          return {
+            type: 'better-sqlite3',
+            database: configService.get('DB_NAME') || 'database.sqlite',
+            entities: [__dirname + '/**/*.entity{.ts,.js}'],
+            synchronize: true, // Não usar em produção
+          };
+        }
+      },
     }),
     AuthModule,
     ProjectsModule,

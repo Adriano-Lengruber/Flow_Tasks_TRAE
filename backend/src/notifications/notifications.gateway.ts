@@ -10,9 +10,9 @@ import {
 import { Server, Socket } from 'socket.io';
 import { UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { NotificationsService, Notification } from './notifications.service';
+import { NotificationsService } from './notifications.service';
+import { Notification } from './entities/notification.entity';
 import { NotificationType } from './enums/notification-type.enum';
-import { v4 as uuidv4 } from 'uuid';
 
 @WebSocketGateway({
   cors: {
@@ -44,7 +44,7 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
       client.join(`user-${userId}`);
 
       // Enviar notificações não lidas ao conectar
-      const notifications = this.notificationsService.getNotificationsForUser(userId);
+      const notifications = await this.notificationsService.getNotificationsForUser(userId);
       client.emit('notifications', notifications);
 
       console.log(`Client connected: ${client.id}, User: ${userId}`);
@@ -64,31 +64,29 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
   }
 
   @SubscribeMessage('markAsRead')
-  handleMarkAsRead(
+  async handleMarkAsRead(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { notificationId: string },
   ) {
     const userId = this.connectedClients.get(client.id);
     if (userId && data.notificationId) {
-      this.notificationsService.markAsRead(userId, data.notificationId);
-      return { success: true };
+      const success = await this.notificationsService.markAsRead(userId, data.notificationId);
+      return { success };
     }
     return { success: false };
   }
 
-  sendNotification(userId: string, type: NotificationType, message: string, entityData?: { id: string; type: string }) {
-    const notification: Notification = {
-      id: uuidv4(),
+  async sendNotification(userId: string, type: NotificationType, message: string, entityData?: { id: string; type: string }) {
+    const notification = await this.notificationsService.addNotification(
+      userId,
       type,
       message,
-      entityId: entityData?.id,
-      entityType: entityData?.type,
-      createdAt: new Date(),
-      read: false,
-    };
+      entityData?.id,
+      entityData?.type,
+    );
 
-    this.notificationsService.addNotification(userId, notification);
     this.server.to(`user-${userId}`).emit('notification', notification);
+    return notification;
   }
 
   broadcastProjectUpdate(projectId: string, data: any) {

@@ -43,7 +43,7 @@ export class CommentsService {
     
     // Enviar notificação para o responsável pela tarefa (se não for o autor do comentário)
     if (task.assignee && task.assignee.id !== user.id) {
-      this.notificationsGateway.sendNotification(
+      await this.notificationsGateway.sendNotification(
         task.assignee.id,
         NotificationType.TASK_COMMENT,
         `${user.name} comentou na tarefa "${task.title}"`,
@@ -54,7 +54,7 @@ export class CommentsService {
     // Enviar notificação para o dono do projeto (se não for o autor do comentário)
     const projectOwner = task.section.project.owner;
     if (projectOwner && projectOwner.id !== user.id && (!task.assignee || task.assignee.id !== projectOwner.id)) {
-      this.notificationsGateway.sendNotification(
+      await this.notificationsGateway.sendNotification(
         projectOwner.id,
         NotificationType.TASK_COMMENT,
         `${user.name} comentou na tarefa "${task.title}"`,

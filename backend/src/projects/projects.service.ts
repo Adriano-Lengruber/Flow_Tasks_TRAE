@@ -145,7 +145,7 @@ export class ProjectsService {
     
     // Notificar sobre a criação da tarefa se houver um assignee
     if (createTaskInput.assigneeId) {
-      this.notificationsGateway.sendNotification(
+      await this.notificationsGateway.sendNotification(
         createTaskInput.assigneeId,
         NotificationType.TASK_ASSIGNED,
         `Uma nova tarefa foi atribuída a você: ${savedTask.title}`,
@@ -185,7 +185,7 @@ export class ProjectsService {
     
     // Notificar sobre mudança de responsável
     if (updateTaskInput.assigneeId && updateTaskInput.assigneeId !== previousAssigneeId) {
-      this.notificationsGateway.sendNotification(
+      await this.notificationsGateway.sendNotification(
         updateTaskInput.assigneeId,
         NotificationType.TASK_ASSIGNED,
         `A tarefa "${updatedTask.title}" foi atribuída a você`,
@@ -199,7 +199,7 @@ export class ProjectsService {
       const section = await this.findSectionById(updatedTask.section.id);
       const project = await this.findProjectById(section.project.id);
       
-      this.notificationsGateway.sendNotification(
+      await this.notificationsGateway.sendNotification(
         project.owner.id,
         NotificationType.TASK_COMPLETED,
         `A tarefa "${updatedTask.title}" foi concluída`,
@@ -250,7 +250,7 @@ export class ProjectsService {
     if (originalSectionId !== targetSectionId) {
       // Notificar o responsável pela tarefa, se houver
       if (task.assignee) {
-        this.notificationsGateway.sendNotification(
+        await this.notificationsGateway.sendNotification(
           task.assignee.id,
           NotificationType.TASK_MOVED,
           `A tarefa "${task.title}" foi movida para ${targetSection.name}`,

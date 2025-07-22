@@ -8,6 +8,7 @@ export enum NotificationType {
   PROJECT_CREATED = 'PROJECT_CREATED',
   PROJECT_UPDATED = 'PROJECT_UPDATED',
   DEADLINE_APPROACHING = 'DEADLINE_APPROACHING',
+  SYSTEM = 'SYSTEM',
 }
 
 registerEnumType(NotificationType, {

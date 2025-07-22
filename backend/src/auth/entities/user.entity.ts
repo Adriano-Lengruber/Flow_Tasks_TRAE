@@ -1,5 +1,7 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, OneToOne } from 'typeorm';
+import { Project } from '../../projects/entities/project.entity';
+import { NotificationPreferences } from '../../notifications/entities/notification-preferences.entity';
 
 @ObjectType()
 @Entity()
@@ -26,4 +28,12 @@ export class User {
   @Field()
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Field(() => [Project], { nullable: true })
+  @OneToMany(() => Project, (project) => project.owner)
+  projects?: Project[];
+
+  @Field(() => NotificationPreferences, { nullable: true })
+  @OneToOne(() => NotificationPreferences, (preferences) => preferences.user, { eager: true })
+  notificationPreferences?: NotificationPreferences;
 }

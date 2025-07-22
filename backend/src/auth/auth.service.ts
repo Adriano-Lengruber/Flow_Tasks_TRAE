@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -7,6 +7,7 @@ import * as bcrypt from 'bcrypt';
 import { LoginInput } from './dto/login.input';
 import { AuthPayload } from './dto/auth.payload';
 import { CreateUserInput } from './dto/create-user.input';
+import { NotificationPreferencesService } from '../notifications/notification-preferences.service';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +15,7 @@ export class AuthService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     private jwtService: JwtService,
+    private notificationPreferencesService: NotificationPreferencesService,
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
@@ -28,7 +30,7 @@ export class AuthService {
   async login(loginInput: LoginInput): Promise<AuthPayload> {
     const user = await this.validateUser(loginInput.email, loginInput.password);
     if (!user) {
-      throw new Error('Invalid credentials');
+      throw new UnauthorizedException('Invalid credentials');
     }
     const payload = { email: user.email, sub: user.id };
     return {
@@ -42,7 +44,7 @@ export class AuthService {
 
     const existingUser = await this.usersRepository.findOne({ where: { email } });
     if (existingUser) {
-      throw new Error('User with this email already exists');
+      throw new ConflictException('User with this email already exists');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -54,6 +56,9 @@ export class AuthService {
     });
 
     const savedUser = await this.usersRepository.save(newUser);
+
+    // Criar preferências de notificação padrão para o novo usuário
+    await this.notificationPreferencesService.createDefaultPreferencesForUser(savedUser);
 
     const payload = { email: savedUser.email, sub: savedUser.id };
     return {
