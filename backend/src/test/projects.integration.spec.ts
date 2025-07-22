@@ -4,7 +4,7 @@ import * as request from 'supertest';
 import { AppModule } from '../app.module';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Project } from '../projects/entities/project.entity';
-import { Task } from '../tasks/entities/task.entity';
+import { Task } from '../projects/entities/task.entity';
 import { User } from '../auth/entities/user.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
