@@ -1,0 +1,39 @@
+import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Section } from './section.entity';
+import { User } from '../../auth/entities/user.entity';
+
+@ObjectType()
+@Entity()
+export class Project {
+  @Field(() => ID)
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Field()
+  @Column()
+  name: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  description?: string;
+
+  @Field(() => [Section], { nullable: true })
+  @OneToMany(() => Section, (section) => section.project, {
+    cascade: true,
+    eager: true,
+  })
+  sections?: Section[];
+
+  @Field(() => User)
+  @ManyToOne(() => User, (user) => user.projects)
+  owner: User;
+
+  @Field()
+  @Column({ default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
+
+  @Field()
+  @Column({ default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
+  updatedAt: Date;
+}
