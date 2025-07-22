@@ -22,6 +22,9 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { Link } from 'react-router-dom';
+import useToast from '../hooks/useToast';
+import Toast from '../components/common/Toast';
+import Loading from '../components/common/Loading';
 
 const GET_PROJECTS = gql`
   query GetProjects {
@@ -64,20 +67,35 @@ const Projects: React.FC = () => {
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
   const [editingProject, setEditingProject] = useState<{ id: string; name: string; description: string } | null>(null);
+  const { toast, showError, showSuccess, hideToast } = useToast();
 
-  const { loading, error, data, refetch } = useQuery(GET_PROJECTS);
+  const { loading, error, data, refetch } = useQuery(GET_PROJECTS, {
+    onError: (error) => {
+      showError('Erro ao carregar projetos: ' + error.message);
+    },
+  });
 
   const [createProject, { loading: createLoading }] = useMutation(CREATE_PROJECT, {
     onCompleted: () => {
       setOpenDialog(false);
       setProjectName('');
       setProjectDescription('');
+      showSuccess('Projeto criado com sucesso!');
       refetch();
+    },
+    onError: (error) => {
+      showError('Erro ao criar projeto: ' + error.message);
     },
   });
 
   const [deleteProject, { loading: deleteLoading }] = useMutation(DELETE_PROJECT, {
-    onCompleted: () => refetch(),
+    onCompleted: () => {
+      showSuccess('Projeto excluído com sucesso!');
+      refetch();
+    },
+    onError: (error) => {
+      showError('Erro ao excluir projeto: ' + error.message);
+    },
   });
 
   const handleCreateProject = () => {
@@ -127,7 +145,7 @@ const Projects: React.FC = () => {
     return Math.round((completedTasks / totalTasks) * 100);
   };
 
-  if (loading) return <CircularProgress />;
+  if (loading) return <Loading />;
   if (error) return <Typography color="error">Erro ao carregar projetos: {error.message}</Typography>;
 
   const projects = data?.projects || [];
@@ -253,6 +271,12 @@ const Projects: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      <Toast
+        open={toast.open}
+        message={toast.message}
+        severity={toast.severity}
+        onClose={hideToast}
+      />
     </Box>
   );
 };

@@ -22,14 +22,14 @@ const NotificationItem: React.FC<{
     <MenuItem
       onClick={handleClick}
       sx={{
-        backgroundColor: notification.read ? 'transparent' : 'rgba(25, 118, 210, 0.08)',
-        borderLeft: notification.read ? 'none' : '3px solid #1976d2',
+        backgroundColor: notification.isRead ? 'transparent' : 'rgba(25, 118, 210, 0.08)',
+        borderLeft: notification.isRead ? 'none' : '3px solid #1976d2',
         display: 'block',
         width: '100%',
         maxWidth: '400px',
       }}
     >
-      <Typography variant="subtitle2" sx={{ fontWeight: notification.read ? 'normal' : 'bold' }}>
+      <Typography variant="subtitle2" sx={{ fontWeight: notification.isRead ? 'normal' : 'bold' }}>
         {notification.message}
       </Typography>
       <Typography variant="caption" color="text.secondary">
@@ -40,7 +40,7 @@ const NotificationItem: React.FC<{
 };
 
 export const NotificationsList: React.FC = () => {
-  const { notifications, unreadCount, clearNotifications } = useNotifications();
+  const { notifications, unreadCount, markAllAsRead, clearNotifications } = useNotifications();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -54,6 +54,11 @@ export const NotificationsList: React.FC = () => {
 
   const handleClearAll = () => {
     clearNotifications();
+    handleClose();
+  };
+
+  const handleMarkAllAsRead = () => {
+    markAllAsRead();
     handleClose();
   };
 
@@ -91,14 +96,24 @@ export const NotificationsList: React.FC = () => {
         <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="h6">Notificações</Typography>
           {notifications.length > 0 && (
-            <Typography
-              variant="caption"
-              color="primary"
-              sx={{ cursor: 'pointer' }}
-              onClick={handleClearAll}
-            >
-              Limpar todas
-            </Typography>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Typography
+                variant="caption"
+                color="primary"
+                sx={{ cursor: 'pointer' }}
+                onClick={handleMarkAllAsRead}
+              >
+                Marcar todas como lidas
+              </Typography>
+              <Typography
+                variant="caption"
+                color="error"
+                sx={{ cursor: 'pointer' }}
+                onClick={handleClearAll}
+              >
+                Limpar todas
+              </Typography>
+            </Box>
           )}
         </Box>
         <Divider />

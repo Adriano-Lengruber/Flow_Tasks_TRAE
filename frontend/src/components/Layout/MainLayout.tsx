@@ -6,6 +6,7 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import PeopleIcon from '@mui/icons-material/People';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import { NotificationsList } from '../Notifications/NotificationsList';
 import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
@@ -30,6 +31,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
     { text: 'Projetos', icon: <AssignmentIcon />, path: '/projects' },
     { text: 'Equipe', icon: <PeopleIcon />, path: '/team' },
+    { text: 'Preferências de Notificação', icon: <NotificationsIcon />, path: '/notification-preferences' },
     { text: 'Configurações', icon: <SettingsIcon />, path: '/settings' },
   ];
 

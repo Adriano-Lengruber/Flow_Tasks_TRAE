@@ -13,6 +13,8 @@ import {
   Divider,
 } from '@mui/material';
 import { useAuth } from '../hooks/useAuth';
+import useToast from '../hooks/useToast';
+import Toast from '../components/common/Toast';
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -21,47 +23,89 @@ const Register: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const navigate = useNavigate();
   const { register } = useAuth();
+  const { toast, showError, showSuccess, hideToast } = useToast();
 
-  const validateForm = () => {
-    if (!username || !email || !password || !confirmPassword) {
-      setError('Todos os campos são obrigatórios');
-      return false;
-    }
-
-    if (password !== confirmPassword) {
-      setError('As senhas não coincidem');
-      return false;
-    }
-
-    if (password.length < 6) {
-      setError('A senha deve ter pelo menos 6 caracteres');
-      return false;
-    }
-
+  const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError('Email inválido');
-      return false;
-    }
+    return emailRegex.test(email);
+  };
 
-    return true;
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setEmail(value);
+    if (value && !validateEmail(value)) {
+      setEmailError('Por favor, insira um email válido');
+    } else {
+      setEmailError('');
+    }
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPassword(value);
+    if (value && value.length < 6) {
+      setPasswordError('A senha deve ter pelo menos 6 caracteres');
+    } else {
+      setPasswordError('');
+    }
+    // Revalidar confirmação de senha se já foi preenchida
+    if (confirmPassword && value !== confirmPassword) {
+      setConfirmPasswordError('As senhas não coincidem');
+    } else if (confirmPassword) {
+      setConfirmPasswordError('');
+    }
+  };
+
+  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setConfirmPassword(value);
+    if (value && password !== value) {
+      setConfirmPasswordError('As senhas não coincidem');
+    } else {
+      setConfirmPasswordError('');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (!validateForm()) return;
+    // Validação antes de enviar
+    if (!username.trim()) {
+      showError('Nome é obrigatório');
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setEmailError('Por favor, insira um email válido');
+      return;
+    }
+
+    if (password.length < 6) {
+      setPasswordError('A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setConfirmPasswordError('As senhas não coincidem');
+      return;
+    }
 
     setLoading(true);
 
     try {
       await register(username, email, password);
-      navigate('/');
+      showSuccess('Conta criada com sucesso!');
+      setTimeout(() => navigate('/'), 1000);
     } catch (err: any) {
-      setError(err.message || 'Falha ao registrar. Tente novamente.');
+      const errorMessage = err.message || 'Falha ao registrar. Tente novamente.';
+      setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -108,8 +152,10 @@ const Register: React.FC = () => {
                 name="email"
                 autoComplete="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={handleEmailChange}
                 disabled={loading}
+                error={!!emailError}
+                helperText={emailError}
               />
               <TextField
                 margin="normal"
@@ -121,8 +167,10 @@ const Register: React.FC = () => {
                 id="password"
                 autoComplete="new-password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={handlePasswordChange}
                 disabled={loading}
+                error={!!passwordError}
+                helperText={passwordError}
               />
               <TextField
                 margin="normal"
@@ -133,15 +181,17 @@ const Register: React.FC = () => {
                 type="password"
                 id="confirmPassword"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={handleConfirmPasswordChange}
                 disabled={loading}
+                error={!!confirmPasswordError}
+                helperText={confirmPasswordError}
               />
               <Button
                 type="submit"
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
-                disabled={loading || !username || !email || !password || !confirmPassword}
+                disabled={loading || !username || !email || !password || !confirmPassword || !!emailError || !!passwordError || !!confirmPasswordError}
               >
                 {loading ? <CircularProgress size={24} /> : 'Registrar'}
               </Button>
@@ -162,6 +212,12 @@ const Register: React.FC = () => {
           </Box>
         </Paper>
       </Box>
+      <Toast
+        open={toast.open}
+        message={toast.message}
+        severity={toast.severity}
+        onClose={hideToast}
+      />
     </Container>
   );
 };

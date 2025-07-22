@@ -18,6 +18,7 @@ import ProjectDetail from './pages/ProjectDetail';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import NotFound from './pages/NotFound';
+import NotificationPreferencesPage from './pages/NotificationPreferencesPage';
 
 // Tema personalizado
 const theme = createTheme({
@@ -130,6 +131,16 @@ function App() {
                   <ProtectedRoute>
                     <MainLayout>
                       <ProjectDetail />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/notification-preferences"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <NotificationPreferencesPage />
                     </MainLayout>
                   </ProtectedRoute>
                 }

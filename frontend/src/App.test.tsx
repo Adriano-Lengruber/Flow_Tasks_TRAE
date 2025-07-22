@@ -1,9 +1,26 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import App from './App';
 
-test('renders learn react link', () => {
+// Mock do localStorage para os testes
+Object.defineProperty(window, 'localStorage', {
+  value: {
+    getItem: jest.fn(() => null),
+    setItem: jest.fn(() => null),
+    removeItem: jest.fn(() => null),
+    clear: jest.fn(() => null),
+  },
+  writable: true,
+});
+
+// Mock do WebSocket
+global.WebSocket = jest.fn(() => ({
+  close: jest.fn(),
+  send: jest.fn(),
+})) as any;
+
+test('renders app without crashing', () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  // Verifica se o componente renderiza sem erros
+  expect(document.body).toBeInTheDocument();
 });

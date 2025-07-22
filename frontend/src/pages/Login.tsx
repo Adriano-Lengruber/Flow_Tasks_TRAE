@@ -13,25 +13,59 @@ import {
   Divider,
 } from '@mui/material';
 import { useAuth } from '../hooks/useAuth';
+import useToast from '../hooks/useToast';
+import Toast from '../components/common/Toast';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { toast, showError, showSuccess, hideToast } = useToast();
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setEmail(value);
+    if (value && !validateEmail(value)) {
+      setEmailError('Por favor, insira um email válido');
+    } else {
+      setEmailError('');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    
+    // Validação antes de enviar
+    if (!validateEmail(email)) {
+      setEmailError('Por favor, insira um email válido');
+      return;
+    }
+    
+    if (password.length < 6) {
+      showError('A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+    
     setLoading(true);
 
     try {
       await login(email, password);
-      navigate('/');
+      showSuccess('Login realizado com sucesso!');
+      setTimeout(() => navigate('/'), 1000);
     } catch (err: any) {
-      setError(err.message || 'Falha ao fazer login. Verifique suas credenciais.');
+      const errorMessage = err.message || 'Falha ao fazer login. Verifique suas credenciais.';
+      setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -66,8 +100,10 @@ const Login: React.FC = () => {
                 autoComplete="email"
                 autoFocus
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={handleEmailChange}
                 disabled={loading}
+                error={!!emailError}
+                helperText={emailError}
               />
               <TextField
                 margin="normal"
@@ -87,7 +123,7 @@ const Login: React.FC = () => {
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
-                disabled={loading || !email || !password}
+                disabled={loading || !email || !password || !!emailError}
               >
                 {loading ? <CircularProgress size={24} /> : 'Entrar'}
               </Button>
@@ -108,6 +144,12 @@ const Login: React.FC = () => {
           </Box>
         </Paper>
       </Box>
+      <Toast
+        open={toast.open}
+        message={toast.message}
+        severity={toast.severity}
+        onClose={hideToast}
+      />
     </Container>
   );
 };
