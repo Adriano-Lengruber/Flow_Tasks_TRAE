@@ -11,10 +11,38 @@ import {
   Alert,
   CircularProgress,
   Divider,
+  Card,
+  CardContent,
+  useTheme,
+  alpha,
+  styled,
 } from '@mui/material';
+import { PersonAddOutlined, EmailOutlined, LockOutlined, PersonOutlined } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
 import useToast from '../hooks/useToast';
 import Toast from '../components/common/Toast';
+import ThemeToggle from '../components/common/ThemeToggle';
+
+const StyledContainer = styled(Container)(({ theme }) => ({
+  minHeight: '100vh',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  background: theme.palette.mode === 'dark' 
+    ? `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.1)} 0%, ${alpha(theme.palette.secondary.dark, 0.1)} 100%)`
+    : `linear-gradient(135deg, ${alpha(theme.palette.primary.light, 0.1)} 0%, ${alpha(theme.palette.secondary.light, 0.1)} 100%)`,
+}));
+
+const StyledCard = styled(Card)(({ theme }) => ({
+  maxWidth: 500,
+  width: '100%',
+  borderRadius: 16,
+  boxShadow: theme.palette.mode === 'dark'
+    ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+    : '0 8px 32px rgba(0, 0, 0, 0.1)',
+  backdropFilter: 'blur(10px)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+}));
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -29,6 +57,7 @@ const Register: React.FC = () => {
   const navigate = useNavigate();
   const { register } = useAuth();
   const { toast, showError, showSuccess, hideToast } = useToast();
+  const theme = useTheme();
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -112,113 +141,218 @@ const Register: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box sx={{ mt: 8, mb: 4 }}>
-        <Paper elevation={3} sx={{ p: 4 }}>
+    <StyledContainer maxWidth={false}>
+      <Box sx={{ position: 'absolute', top: 20, right: 20 }}>
+        <ThemeToggle />
+      </Box>
+      
+      <StyledCard>
+        <CardContent sx={{ p: 4 }}>
           <Box display="flex" flexDirection="column" alignItems="center">
-            <Typography component="h1" variant="h4" gutterBottom>
-              Criar Conta
+            {/* Logo/Icon */}
+            <Box
+              sx={{
+                width: 64,
+                height: 64,
+                borderRadius: '50%',
+                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mb: 3,
+              }}
+            >
+              <PersonAddOutlined sx={{ fontSize: 32, color: 'white' }} />
+            </Box>
+
+            <Typography component="h1" variant="h4" gutterBottom fontWeight={600}>
+              Criar sua conta
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Registre-se para começar a gerenciar seus projetos
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 4, textAlign: 'center' }}>
+              Junte-se à nossa plataforma e comece a gerenciar seus projetos de forma eficiente
             </Typography>
 
             {error && (
-              <Alert severity="error" sx={{ width: '100%', mb: 3 }}>
+              <Alert 
+                severity="error" 
+                sx={{ 
+                  width: '100%', 
+                  mb: 3,
+                  borderRadius: 2,
+                }}
+              >
                 {error}
               </Alert>
             )}
 
             <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                id="username"
-                label="Nome de Usuário"
-                name="username"
-                autoComplete="username"
-                autoFocus
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                disabled={loading}
-              />
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                id="email"
-                label="Email"
-                name="email"
-                autoComplete="email"
-                value={email}
-                onChange={handleEmailChange}
-                disabled={loading}
-                error={!!emailError}
-                helperText={emailError}
-              />
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                name="password"
-                label="Senha"
-                type="password"
-                id="password"
-                autoComplete="new-password"
-                value={password}
-                onChange={handlePasswordChange}
-                disabled={loading}
-                error={!!passwordError}
-                helperText={passwordError}
-              />
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                name="confirmPassword"
-                label="Confirmar Senha"
-                type="password"
-                id="confirmPassword"
-                value={confirmPassword}
-                onChange={handleConfirmPasswordChange}
-                disabled={loading}
-                error={!!confirmPasswordError}
-                helperText={confirmPasswordError}
-              />
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="username"
+                    label="Nome de Usuário"
+                    name="username"
+                    autoComplete="username"
+                    autoFocus
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    disabled={loading}
+                    InputProps={{
+                      startAdornment: (
+                        <PersonOutlined sx={{ mr: 1, color: 'text.secondary' }} />
+                      ),
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 2,
+                      },
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="email"
+                    label="Email"
+                    name="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={handleEmailChange}
+                    disabled={loading}
+                    error={!!emailError}
+                    helperText={emailError}
+                    InputProps={{
+                      startAdornment: (
+                        <EmailOutlined sx={{ mr: 1, color: 'text.secondary' }} />
+                      ),
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 2,
+                      },
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    name="password"
+                    label="Senha"
+                    type="password"
+                    id="password"
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={handlePasswordChange}
+                    disabled={loading}
+                    error={!!passwordError}
+                    helperText={passwordError}
+                    InputProps={{
+                      startAdornment: (
+                        <LockOutlined sx={{ mr: 1, color: 'text.secondary' }} />
+                      ),
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 2,
+                      },
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    name="confirmPassword"
+                    label="Confirmar Senha"
+                    type="password"
+                    id="confirmPassword"
+                    value={confirmPassword}
+                    onChange={handleConfirmPasswordChange}
+                    disabled={loading}
+                    error={!!confirmPasswordError}
+                    helperText={confirmPasswordError}
+                    InputProps={{
+                      startAdornment: (
+                        <LockOutlined sx={{ mr: 1, color: 'text.secondary' }} />
+                      ),
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 2,
+                      },
+                    }}
+                  />
+                </Grid>
+              </Grid>
+              
               <Button
                 type="submit"
                 fullWidth
                 variant="contained"
-                sx={{ mt: 3, mb: 2 }}
+                size="large"
                 disabled={loading || !username || !email || !password || !confirmPassword || !!emailError || !!passwordError || !!confirmPasswordError}
+                sx={{
+                  mt: 3,
+                  mb: 2,
+                  py: 1.5,
+                  borderRadius: 2,
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                  '&:hover': {
+                    background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
+                  },
+                  fontWeight: 600,
+                  fontSize: '1.1rem',
+                  color: theme.palette.mode === 'light' ? '#ffffff !important' : '#000000 !important',
+                }}
               >
-                {loading ? <CircularProgress size={24} /> : 'Registrar'}
+                {loading ? (
+                  <CircularProgress size={24} sx={{ color: 'white' }} />
+                ) : (
+                  'Criar Conta'
+                )}
               </Button>
 
-              <Divider sx={{ my: 2 }} />
+              <Divider sx={{ my: 3 }}>
+                <Typography variant="body2" color="text.secondary">
+                  ou
+                </Typography>
+              </Divider>
 
-              <Grid container justifyContent="center">
-                <Grid item>
-                  <Typography variant="body2" align="center">
-                    Já tem uma conta?{' '}
-                    <Link to="/login" style={{ textDecoration: 'none' }}>
-                      Entrar
-                    </Link>
-                  </Typography>
-                </Grid>
-              </Grid>
+              <Box textAlign="center">
+                <Typography variant="body1" color="text.secondary">
+                  Já tem uma conta?{' '}
+                  <Link 
+                    to="/login" 
+                    style={{ 
+                      textDecoration: 'none',
+                      color: theme.palette.primary.main,
+                      fontWeight: 600,
+                    }}
+                  >
+                    Faça login aqui
+                  </Link>
+                </Typography>
+              </Box>
             </Box>
           </Box>
-        </Paper>
-      </Box>
+        </CardContent>
+      </StyledCard>
+      
       <Toast
         open={toast.open}
         message={toast.message}
         severity={toast.severity}
         onClose={hideToast}
       />
-    </Container>
+    </StyledContainer>
   );
 };
 

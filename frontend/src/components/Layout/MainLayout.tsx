@@ -8,6 +8,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import { NotificationsList } from '../Notifications/NotificationsList';
+import ThemeToggle from '../common/ThemeToggle';
 import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
 
@@ -92,7 +93,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             {/* Título da página atual poderia ser dinâmico */}
             Fusion Flow
           </Typography>
-          {user && <NotificationsList />}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <ThemeToggle />
+            {user && <NotificationsList />}
+          </Box>
         </Toolbar>
       </AppBar>
       <Box

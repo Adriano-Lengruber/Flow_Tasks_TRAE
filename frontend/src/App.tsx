@@ -5,9 +5,9 @@ import { setContext } from '@apollo/client/link/context';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
-import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { NotificationsProvider } from './components/Notifications/NotificationsProvider';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { MainLayout } from './components/Layout/MainLayout';
 import './App.css';
 
@@ -20,17 +20,7 @@ import Register from './pages/Register';
 import NotFound from './pages/NotFound';
 import NotificationPreferencesPage from './pages/NotificationPreferencesPage';
 
-// Tema personalizado
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-});
+// O tema agora é gerenciado pelo ThemeContext
 
 // Configuração do Apollo Client
 const httpLink = createHttpLink({
@@ -97,8 +87,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 function App() {
   // Envolver o ApolloProvider em uma função para evitar problemas com hooks
   const AppWithProviders = () => (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <ThemeProvider>
       <AuthProvider>
         <NotificationsProvider>
           <Router>

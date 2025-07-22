@@ -72,11 +72,22 @@ Este documento resume o estado atual do projeto Fusion Flow, destacando o que j�
 - ❌ Frontend: Criar configurações para integrações
 - ❌ Implementar bots para Slack e Microsoft Teams
 
+## 🧪 Testes Automatizados
+- ✅ **Testes unitários básicos** - 101 testes passando (100% sucesso)
+- ✅ **Testes unitários robustos** - AuthService com casos edge e concorrência
+- ✅ **Testes de integração** - Error handling, autenticação, projetos
+- ✅ **Testes de performance** - Carga, concorrência, queries complexas
+- ✅ **Configuração Jest** - TypeScript, projetos separados, coverage
+- ✅ **Documentação completa** - TESTING.md com guias e troubleshooting
+- ✅ **Scripts especializados** - Execução por tipo de teste
+- ❌ Testes E2E com Cypress/Playwright
+- ❌ Coverage reports automatizados no CI/CD
+
 ## Próximos Passos Recomendados
 
 1. **Completar funcionalidades do MVP**:
    - Revisar e melhorar a experiência do usuário nos módulos já implementados
-   - Adicionar testes automatizados para garantir estabilidade
+   - ✅ Testes automatizados implementados e funcionando
 
 2. **Iniciar Fase 2 - Módulo de Automações**:
    - Definir modelo de dados para regras de automação

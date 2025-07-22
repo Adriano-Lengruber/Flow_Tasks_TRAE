@@ -6,10 +6,13 @@ Este documento serve como um guia prático e conciso para as próximas etapas de
 
 ### 1. Refinamento do MVP
 
-- [ ] **Testes Automatizados**
-  - [ ] Implementar testes unitários para os resolvers do backend
-  - [ ] Implementar testes de integração para fluxos críticos
+- [x] **Testes Automatizados - CONCLUÍDO**
+  - [x] Implementar testes unitários para os resolvers do backend (101 testes passando)
+  - [x] Implementar testes de integração para fluxos críticos
+  - [x] Testes de performance com dados em larga escala
   - [ ] Configurar CI/CD para execução automática de testes
+  - [ ] Implementar testes E2E com Cypress/Playwright
+  - [ ] Adicionar testes para frontend React
 
 - [ ] **Melhorias de UX**
   - [ ] Adicionar feedback visual para operações de arrastar e soltar no Kanban
