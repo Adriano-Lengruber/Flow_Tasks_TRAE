@@ -79,7 +79,7 @@ Isso iniciará tanto o backend quanto o frontend em modo de desenvolvimento.
 - ✅ **101 testes automatizados** com cobertura robusta
 
 ### Próximas Funcionalidades
-- 🔄 **Responsividade mobile** (em desenvolvimento)
+- ✅ **Responsividade mobile** (componentes e hooks implementados)
 - 📊 **Módulo de métricas** e dashboard
 - 📱 **Aplicativo mobile** (React Native)
 - 🤖 **Assistente de IA** para sugestões

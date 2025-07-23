@@ -6,13 +6,7 @@ import {
   Box,
   Paper,
   Grid,
-  Button,
   CircularProgress,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
   IconButton,
   Card,
   CardContent,
@@ -57,6 +51,9 @@ import LoadingSkeleton from '../components/common/LoadingSkeleton';
 import DragFeedback from '../components/common/DragFeedback';
 import KanbanSkeleton from '../components/common/KanbanSkeleton';
 import ResponsiveContainer, { useResponsiveStyles } from '../components/common/ResponsiveContainer';
+import ResponsiveModal from '../components/common/ResponsiveModal';
+import { MobileOptimizedTextField } from '../components/common/MobileOptimizedForm';
+import { TouchOptimizedButton } from '../components/common/TouchOptimizedButton';
 import SortableTaskItem from '../components/common/SortableTaskItem';
 import SortableSection from '../components/common/SortableSection';
 import useDragAndDrop from '../hooks/useDragAndDrop';
@@ -419,9 +416,16 @@ const ProjectDetail: React.FC = () => {
     setMenuTaskId('');
   };
 
-  // Configuração dos sensores para o DndContext
+  // Configuração dos sensores para o DndContext com otimizações mobile
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      // Otimizações para touch mobile
+      activationConstraint: {
+        distance: isMobile ? 8 : 5, // Maior tolerância para mobile
+        delay: isMobile ? 150 : 0,  // Delay para evitar conflitos com scroll
+        tolerance: isMobile ? 8 : 5,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -562,22 +566,22 @@ const ProjectDetail: React.FC = () => {
             </Typography>
           </Box>
           <Box>
-            <Button
+            <TouchOptimizedButton
               variant="outlined"
               startIcon={<PersonAddIcon />}
               sx={{ mr: 1 }}
               disabled={!isOwner}
             >
               Gerenciar Membros
-            </Button>
-            <Button
+            </TouchOptimizedButton>
+            <TouchOptimizedButton
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => setOpenSectionDialog(true)}
               disabled={!canEdit}
             >
               Nova Seção
-            </Button>
+            </TouchOptimizedButton>
           </Box>
         </Box>
 
@@ -614,74 +618,70 @@ const ProjectDetail: React.FC = () => {
       </Box>
 
       {/* Diálogo para criar seção */}
-      <Dialog open={openSectionDialog} onClose={() => setOpenSectionDialog(false)}>
-        <DialogTitle>Nova Seção</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Nome da Seção"
-            fullWidth
-            variant="outlined"
-            value={sectionName}
-            onChange={(e) => setSectionName(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenSectionDialog(false)}>Cancelar</Button>
-          <Button
-            onClick={handleCreateSection}
-            variant="contained"
-            disabled={!sectionName.trim()}
-          >
-            Criar
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ResponsiveModal
+        open={openSectionDialog}
+        onClose={() => setOpenSectionDialog(false)}
+        title="Nova Seção"
+        maxWidth="sm"
+        actions={
+          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', width: '100%' }}>
+            <TouchOptimizedButton onClick={() => setOpenSectionDialog(false)}>
+              Cancelar
+            </TouchOptimizedButton>
+            <TouchOptimizedButton
+              onClick={handleCreateSection}
+              variant="contained"
+              disabled={!sectionName.trim()}
+            >
+              Criar
+            </TouchOptimizedButton>
+          </Box>
+        }
+      >
+        <MobileOptimizedTextField
+          autoFocus
+          label="Nome da Seção"
+          value={sectionName}
+          onChange={(e) => setSectionName(e.target.value)}
+          placeholder="Digite o nome da nova seção"
+        />
+      </ResponsiveModal>
 
       {/* Diálogo para criar tarefa */}
-      <Dialog open={openTaskDialog} onClose={() => setOpenTaskDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Nova Tarefa</DialogTitle>
-        <DialogContent>
-          <TextField
+      <ResponsiveModal
+        open={openTaskDialog}
+        onClose={() => setOpenTaskDialog(false)}
+        title="Nova Tarefa"
+        maxWidth="sm"
+      >
+        <Box sx={{ p: 2 }}>
+          <MobileOptimizedTextField
             autoFocus
-            margin="dense"
             label="Título"
-            fullWidth
-            variant="outlined"
             value={taskForm.title}
             onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
             required
             sx={{ mb: 2 }}
           />
-          <TextField
-            margin="dense"
+          <MobileOptimizedTextField
             label="Descrição"
-            fullWidth
-            variant="outlined"
             value={taskForm.description}
             onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })}
             multiline
             rows={3}
             sx={{ mb: 2 }}
           />
-          <TextField
-            margin="dense"
+          <MobileOptimizedTextField
             label="Data de Vencimento"
             type="date"
-            fullWidth
-            variant="outlined"
             InputLabelProps={{ shrink: true }}
             value={taskForm.dueDate}
             onChange={(e) => setTaskForm({ ...taskForm, dueDate: e.target.value })}
             sx={{ mb: 2 }}
           />
-          <TextField
+          <MobileOptimizedTextField
             select
-            margin="dense"
             label="Prioridade"
-            fullWidth
-            variant="outlined"
             value={taskForm.priority}
             onChange={(e) => setTaskForm({ ...taskForm, priority: e.target.value })}
             sx={{ mb: 2 }}
@@ -689,13 +689,10 @@ const ProjectDetail: React.FC = () => {
             <MenuItem value="LOW">Baixa</MenuItem>
             <MenuItem value="MEDIUM">Média</MenuItem>
             <MenuItem value="HIGH">Alta</MenuItem>
-          </TextField>
-          <TextField
+          </MobileOptimizedTextField>
+          <MobileOptimizedTextField
             select
-            margin="dense"
             label="Responsável"
-            fullWidth
-            variant="outlined"
             value={taskForm.assigneeId}
             onChange={(e) => setTaskForm({ ...taskForm, assigneeId: e.target.value })}
           >
@@ -705,46 +702,41 @@ const ProjectDetail: React.FC = () => {
                 {member.name}
               </MenuItem>
             ))}
-          </TextField>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenTaskDialog(false)}>Cancelar</Button>
-          <Button
+          </MobileOptimizedTextField>
+        </Box>
+        <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+          <TouchOptimizedButton onClick={() => setOpenTaskDialog(false)}>
+            Cancelar
+          </TouchOptimizedButton>
+          <TouchOptimizedButton
             onClick={handleCreateTask}
             variant="contained"
             disabled={!taskForm.title.trim()}
           >
             Criar
-          </Button>
-        </DialogActions>
-      </Dialog>
+          </TouchOptimizedButton>
+        </Box>
+      </ResponsiveModal>
 
       {/* Diálogo para detalhes da tarefa */}
-      <Dialog
+      <ResponsiveModal
         open={openTaskDetailDialog}
         onClose={() => setOpenTaskDetailDialog(false)}
+        title="Detalhes da Tarefa"
         maxWidth="sm"
-        fullWidth
       >
-        <DialogTitle>Detalhes da Tarefa</DialogTitle>
-        <DialogContent>
-          <TextField
+        <Box sx={{ p: 2 }}>
+          <MobileOptimizedTextField
             autoFocus
-            margin="dense"
             label="Título"
-            fullWidth
-            variant="outlined"
             value={taskForm.title}
             onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
             required
             sx={{ mb: 2 }}
             disabled={!canEdit}
           />
-          <TextField
-            margin="dense"
+          <MobileOptimizedTextField
             label="Descrição"
-            fullWidth
-            variant="outlined"
             value={taskForm.description}
             onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })}
             multiline
@@ -752,24 +744,18 @@ const ProjectDetail: React.FC = () => {
             sx={{ mb: 2 }}
             disabled={!canEdit}
           />
-          <TextField
-            margin="dense"
+          <MobileOptimizedTextField
             label="Data de Vencimento"
             type="date"
-            fullWidth
-            variant="outlined"
             InputLabelProps={{ shrink: true }}
             value={taskForm.dueDate}
             onChange={(e) => setTaskForm({ ...taskForm, dueDate: e.target.value })}
             sx={{ mb: 2 }}
             disabled={!canEdit}
           />
-          <TextField
+          <MobileOptimizedTextField
             select
-            margin="dense"
             label="Prioridade"
-            fullWidth
-            variant="outlined"
             value={taskForm.priority}
             onChange={(e) => setTaskForm({ ...taskForm, priority: e.target.value })}
             sx={{ mb: 2 }}
@@ -778,13 +764,10 @@ const ProjectDetail: React.FC = () => {
             <MenuItem value="LOW">Baixa</MenuItem>
             <MenuItem value="MEDIUM">Média</MenuItem>
             <MenuItem value="HIGH">Alta</MenuItem>
-          </TextField>
-          <TextField
+          </MobileOptimizedTextField>
+          <MobileOptimizedTextField
             select
-            margin="dense"
             label="Responsável"
-            fullWidth
-            variant="outlined"
             value={taskForm.assigneeId}
             onChange={(e) => setTaskForm({ ...taskForm, assigneeId: e.target.value })}
             sx={{ mb: 2 }}
@@ -796,7 +779,7 @@ const ProjectDetail: React.FC = () => {
                 {member.name}
               </MenuItem>
             ))}
-          </TextField>
+          </MobileOptimizedTextField>
           <Box display="flex" alignItems="center">
             <Checkbox
               checked={taskForm.completed}
@@ -805,30 +788,31 @@ const ProjectDetail: React.FC = () => {
             />
             <Typography>Concluída</Typography>
           </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenTaskDetailDialog(false)}>Cancelar</Button>
+        </Box>
+        <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+          <TouchOptimizedButton onClick={() => setOpenTaskDetailDialog(false)}>
+            Cancelar
+          </TouchOptimizedButton>
           {canEdit && (
-            <Button
+            <TouchOptimizedButton
               onClick={handleUpdateTask}
               variant="contained"
               disabled={!taskForm.title.trim()}
             >
               Salvar
-            </Button>
+            </TouchOptimizedButton>
           )}
-        </DialogActions>
-      </Dialog>
+        </Box>
+      </ResponsiveModal>
 
       {/* Diálogo para comentários */}
-      <Dialog
+      <ResponsiveModal
         open={openCommentDialog}
         onClose={() => setOpenCommentDialog(false)}
+        title="Comentários"
         maxWidth="sm"
-        fullWidth
       >
-        <DialogTitle>Comentários</DialogTitle>
-        <DialogContent>
+        <Box sx={{ p: 2 }}>
           {data.project.sections
             .flatMap((section: any) => section.tasks)
             .find((task: any) => task.id === currentTaskId)?.comments.length === 0 ? (
@@ -855,27 +839,27 @@ const ProjectDetail: React.FC = () => {
                 ))}
             </Box>
           )}
-          <TextField
+          <MobileOptimizedTextField
             label="Adicionar comentário"
-            fullWidth
             multiline
             rows={3}
-            variant="outlined"
             value={commentContent}
             onChange={(e) => setCommentContent(e.target.value)}
           />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenCommentDialog(false)}>Fechar</Button>
-          <Button
+        </Box>
+        <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+          <TouchOptimizedButton onClick={() => setOpenCommentDialog(false)}>
+            Fechar
+          </TouchOptimizedButton>
+          <TouchOptimizedButton
             onClick={handleCreateComment}
             variant="contained"
             disabled={!commentContent.trim()}
           >
             Comentar
-          </Button>
-        </DialogActions>
-      </Dialog>
+          </TouchOptimizedButton>
+        </Box>
+      </ResponsiveModal>
 
       {/* Feedback visual para drag and drop */}
       <DragFeedback

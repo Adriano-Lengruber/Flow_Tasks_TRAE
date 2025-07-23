@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ApolloClient, InMemoryCache, ApolloProvider, createHttpLink, split } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
@@ -9,19 +9,21 @@ import { AuthProvider, useAuth } from './hooks/useAuth';
 import { NotificationsProvider } from './components/Notifications/NotificationsProvider';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { MainLayout } from './components/Layout/MainLayout';
-import './App.css';
-
-// Páginas
-import Dashboard from './pages/Dashboard';
-import Projects from './pages/Projects';
-import ProjectDetail from './pages/ProjectDetail';
-import Tasks from './pages/Tasks';
+import LoadingSkeleton from './components/common/LoadingSkeleton';
+// Páginas sem lazy loading (carregamento imediato)
 import Login from './pages/Login';
 import Register from './pages/Register';
 import NotFound from './pages/NotFound';
-import NotificationPreferencesPage from './pages/NotificationPreferencesPage';
-import Automations from './pages/Automations';
-import GanttPage from './pages/Gantt';
+import './App.css';
+
+// Páginas com lazy loading
+const Dashboard = React.lazy(() => import('./pages/Dashboard'));
+const Projects = React.lazy(() => import('./pages/Projects'));
+const ProjectDetail = React.lazy(() => import('./pages/ProjectDetail'));
+const Tasks = React.lazy(() => import('./pages/Tasks'));
+const NotificationPreferencesPage = React.lazy(() => import('./pages/NotificationPreferencesPage'));
+const Automations = React.lazy(() => import('./pages/Automations'));
+const GanttPage = React.lazy(() => import('./pages/Gantt'));
 
 // O tema agora é gerenciado pelo ThemeContext
 
@@ -100,7 +102,9 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <MainLayout>
-                      <Dashboard />
+                      <Suspense fallback={<LoadingSkeleton />}>
+                        <Dashboard />
+                      </Suspense>
                     </MainLayout>
                   </ProtectedRoute>
                 }
@@ -110,7 +114,9 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <MainLayout>
-                      <Projects />
+                      <Suspense fallback={<LoadingSkeleton />}>
+                        <Projects />
+                      </Suspense>
                     </MainLayout>
                   </ProtectedRoute>
                 }
@@ -120,7 +126,9 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <MainLayout>
-                      <ProjectDetail />
+                      <Suspense fallback={<LoadingSkeleton />}>
+                        <ProjectDetail />
+                      </Suspense>
                     </MainLayout>
                   </ProtectedRoute>
                 }
@@ -130,7 +138,9 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <MainLayout>
-                      <Tasks />
+                      <Suspense fallback={<LoadingSkeleton />}>
+                        <Tasks />
+                      </Suspense>
                     </MainLayout>
                   </ProtectedRoute>
                 }
@@ -138,21 +148,27 @@ function App() {
               <Route path="/notification-preferences" element={
                 <ProtectedRoute>
                   <MainLayout>
-                    <NotificationPreferencesPage />
+                    <Suspense fallback={<LoadingSkeleton />}>
+                      <NotificationPreferencesPage />
+                    </Suspense>
                   </MainLayout>
                 </ProtectedRoute>
               } />
               <Route path="/automations" element={
                 <ProtectedRoute>
                   <MainLayout>
-                    <Automations />
+                    <Suspense fallback={<LoadingSkeleton />}>
+                      <Automations />
+                    </Suspense>
                   </MainLayout>
                 </ProtectedRoute>
               } />
               <Route path="/gantt" element={
                 <ProtectedRoute>
                   <MainLayout>
-                    <GanttPage />
+                    <Suspense fallback={<LoadingSkeleton />}>
+                      <GanttPage />
+                    </Suspense>
                   </MainLayout>
                 </ProtectedRoute>
               } />

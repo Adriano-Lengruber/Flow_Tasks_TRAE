@@ -77,7 +77,7 @@ const StatsCards: React.FC<StatsCardsProps> = ({ data, loading = false }) => {
   ];
 
   return (
-    <Grid container spacing={3}>
+    <Grid container spacing={{ xs: 2, sm: 3 }}>
       {stats.map((stat, index) => (
         <Grid item xs={12} sm={6} md={3} key={index}>
           <Card
@@ -85,15 +85,18 @@ const StatsCards: React.FC<StatsCardsProps> = ({ data, loading = false }) => {
               height: '100%',
               background: `linear-gradient(135deg, ${stat.bgColor} 0%, ${alpha(stat.color, 0.05)} 100%)`,
               border: `1px solid ${alpha(stat.color, 0.1)}`,
+              borderRadius: 2, // Bordas sutis para desktop
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              cursor: 'pointer', // Indica que é interativo
+              minHeight: { xs: 120, sm: 140 }, // Altura mínima para touch
               '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: `0 8px 25px ${alpha(stat.color, 0.15)}`,
-                border: `1px solid ${alpha(stat.color, 0.2)}`,
-              },
+                  transform: 'translateY(-2px)', // Efeito sutil para desktop
+                  boxShadow: `0 4px 12px ${alpha(stat.color, 0.15)}`,
+                  border: `1px solid ${alpha(stat.color, 0.2)}`,
+                },
             }}
           >
-            <CardContent sx={{ p: 3 }}>
+            <CardContent sx={{ p: { xs: 2, sm: 3 } }}> {/* Padding responsivo */}
               <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
                 <Box>
                   <Typography

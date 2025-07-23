@@ -122,16 +122,27 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities, loading = f
 
   if (loading) {
     return (
-      <Card sx={{ height: '100%' }}>
-        <CardHeader title="Atividades Recentes" />
-        <CardContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Card sx={{ 
+        height: '100%',
+        borderRadius: 2, // Bordas sutis para desktop
+      }}>
+        <CardHeader 
+          title="Atividades Recentes" 
+          sx={{
+            pb: { xs: 1, sm: 2 }, // Padding responsivo
+            '& .MuiCardHeader-title': {
+              fontSize: { xs: '1.1rem', sm: '1.25rem' },
+            },
+          }}
+        />
+        <CardContent sx={{ pt: 0, px: { xs: 2, sm: 3 } }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 1.5, sm: 2 } }}>
             {[...Array(5)].map((_, index) => (
-              <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 2 } }}>
                 <Box
                   sx={{
-                    width: 40,
-                    height: 40,
+                    width: { xs: 36, sm: 40 }, // Tamanho responsivo
+                    height: { xs: 36, sm: 40 },
                     borderRadius: '50%',
                     bgcolor: 'grey.200',
                     animation: 'pulse 1.5s ease-in-out infinite',
@@ -140,7 +151,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities, loading = f
                 <Box sx={{ flex: 1 }}>
                   <Box
                     sx={{
-                      height: 16,
+                      height: { xs: 14, sm: 16 }, // Altura responsiva
                       bgcolor: 'grey.200',
                       borderRadius: 1,
                       mb: 1,
@@ -166,7 +177,12 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities, loading = f
   }
 
   return (
-    <Card sx={{ height: '100%', maxHeight: 600, overflow: 'hidden' }}>
+    <Card sx={{ 
+      height: '100%', 
+      maxHeight: { xs: 500, sm: 600 }, // Altura responsiva
+      overflow: 'hidden',
+      borderRadius: 2, // Bordas sutis para desktop
+    }}>
       <CardHeader
         title="Atividades Recentes"
         titleTypographyProps={{
@@ -174,13 +190,21 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities, loading = f
           fontWeight: 600,
         }}
         sx={{
-          pb: 1,
+          pb: { xs: 1, sm: 2 }, // Padding responsivo
+          px: { xs: 2, sm: 3 }, // Padding horizontal responsivo
           '& .MuiCardHeader-title': {
             color: 'text.primary',
+            fontSize: { xs: '1.1rem', sm: '1.25rem' },
           },
         }}
       />
-      <CardContent sx={{ pt: 0, pb: 0, height: 'calc(100% - 64px)', overflow: 'auto' }}>
+      <CardContent sx={{ 
+        pt: 0, 
+        pb: 0, 
+        px: { xs: 2, sm: 3 }, // Padding horizontal responsivo
+        height: { xs: 'calc(100% - 56px)', sm: 'calc(100% - 64px)' }, // Altura responsiva
+        overflow: 'auto' 
+      }}>
         {activities.length === 0 ? (
           <Box
             sx={{
@@ -205,11 +229,15 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities, loading = f
                   <ListItem
                     sx={{
                       px: 0,
-                      py: 2,
+                      py: { xs: 1.5, sm: 2 }, // Padding vertical responsivo
+                      minHeight: { xs: 64, sm: 72 }, // Altura mínima para touch targets
+                      cursor: 'pointer', // Indica interatividade
+                      borderRadius: 1, // Bordas sutis
                       '&:hover': {
                         bgcolor: alpha(color, 0.04),
-                        borderRadius: 1,
                       },
+
+                      transition: 'all 0.2s ease-in-out',
                     }}
                   >
                     <ListItemAvatar>
@@ -217,8 +245,8 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities, loading = f
                         sx={{
                           bgcolor: alpha(color, 0.1),
                           color: color,
-                          width: 40,
-                          height: 40,
+                          width: { xs: 36, sm: 40 }, // Tamanho responsivo
+                          height: { xs: 36, sm: 40 },
                         }}
                         src={activity.user.avatar}
                       >
@@ -227,8 +255,21 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities, loading = f
                     </ListItemAvatar>
                     <ListItemText
                       primary={
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                          <Typography variant="body2" fontWeight={600}>
+                        <Box sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: { xs: 0.5, sm: 1 }, 
+                          mb: 0.5,
+                          flexWrap: { xs: 'wrap', sm: 'nowrap' }, // Quebra em mobile se necessário
+                        }}>
+                          <Typography 
+                            variant="body2" 
+                            fontWeight={600}
+                            sx={{
+                              fontSize: { xs: '0.875rem', sm: '0.875rem' },
+                              lineHeight: 1.4,
+                            }}
+                          >
                             {activity.user.name}
                           </Typography>
                           <Chip
@@ -237,30 +278,72 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities, loading = f
                             sx={{
                               bgcolor: alpha(color, 0.1),
                               color: color,
-                              fontSize: '0.75rem',
-                              height: 20,
+                              fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                              height: { xs: 18, sm: 20 }, // Altura responsiva
+                              minHeight: 44, // Touch target mínimo
+                              '& .MuiChip-label': {
+                                px: { xs: 1, sm: 1.5 },
+                              },
                             }}
                           />
                         </Box>
                       }
                       secondary={
                         <Box>
-                          <Typography variant="body2" color="text.primary" sx={{ mb: 0.5 }}>
+                          <Typography 
+                            variant="body2" 
+                            color="text.primary" 
+                            sx={{ 
+                              mb: 0.5,
+                              fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                              lineHeight: 1.4,
+                            }}
+                          >
                             {activity.title}
                           </Typography>
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography 
+                            variant="caption" 
+                            color="text.secondary"
+                            sx={{
+                              fontSize: { xs: '0.75rem', sm: '0.75rem' },
+                              lineHeight: 1.3,
+                              display: '-webkit-box',
+                              WebkitLineClamp: { xs: 2, sm: 3 }, // Limita linhas em mobile
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                            }}
+                          >
                             {activity.description}
                           </Typography>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                          <Box sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: { xs: 0.5, sm: 1 }, 
+                            mt: 0.5,
+                            flexWrap: 'wrap', // Permite quebra em mobile
+                          }}>
                             {activity.project && (
                               <Chip
                                 label={activity.project.name}
                                 size="small"
                                 variant="outlined"
-                                sx={{ fontSize: '0.7rem', height: 18 }}
+                                sx={{ 
+                                  fontSize: { xs: '0.65rem', sm: '0.7rem' },
+                                  height: { xs: 16, sm: 18 },
+                                  minHeight: 44, // Touch target mínimo
+                                  '& .MuiChip-label': {
+                                    px: { xs: 0.5, sm: 1 },
+                                  },
+                                }}
                               />
                             )}
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography 
+                              variant="caption" 
+                              color="text.secondary"
+                              sx={{
+                                fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                              }}
+                            >
                               {formatDistanceToNow(new Date(activity.createdAt), {
                                 addSuffix: true,
                                 locale: ptBR,
