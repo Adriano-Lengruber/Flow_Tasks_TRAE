@@ -1,5 +1,5 @@
 import { InputType, Field } from '@nestjs/graphql';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsDateString } from 'class-validator';
 
 @InputType()
 export class CreateProjectInput {
@@ -12,4 +12,14 @@ export class CreateProjectInput {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsDateString()
+  startDate?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsDateString()
+  endDate?: string;
 }

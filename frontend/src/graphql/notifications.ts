@@ -6,7 +6,7 @@ export const GET_NOTIFICATIONS = gql`
       id
       type
       message
-      isRead
+      read
       entityId
       entityType
       createdAt

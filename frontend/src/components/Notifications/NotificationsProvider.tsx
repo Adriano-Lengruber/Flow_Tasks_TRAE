@@ -17,7 +17,7 @@ export interface Notification {
   entityId?: string;
   entityType?: string;
   createdAt: Date;
-  isRead: boolean;
+  read: boolean;
 }
 
 interface NotificationsContextType {
@@ -125,7 +125,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
       setNotifications(prev =>
         prev.map(notification =>
           notification.id === notificationId
-            ? { ...notification, isRead: true }
+            ? { ...notification, read: true }
             : notification
         )
       );
@@ -146,7 +146,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
       
       // Atualizar estado local
       setNotifications(prev =>
-        prev.map(notification => ({ ...notification, isRead: true }))
+        prev.map(notification => ({ ...notification, read: true }))
       );
       
       refetchNotifications();
@@ -167,7 +167,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // Calcular o número de notificações não lidas
-  const unreadCount = unreadCountData?.unreadNotificationsCount ?? notifications.filter(notification => !notification.isRead).length;
+  const unreadCount = unreadCountData?.unreadNotificationsCount ?? notifications.filter(notification => !notification.read).length;
 
   return (
     <NotificationsContext.Provider

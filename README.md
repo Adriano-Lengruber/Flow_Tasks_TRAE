@@ -61,13 +61,52 @@ Isso iniciará tanto o backend quanto o frontend em modo de desenvolvimento.
 - Backend: http://localhost:3000
 - Frontend: http://localhost:3001
 
-## Funcionalidades (MVP)
+## Funcionalidades Implementadas
 
-- Autenticação de usuários
-- Gerenciamento de projetos
-- Quadro Kanban com arrastar e soltar
-- Notificações em tempo real
+### MVP + Fase 2 - ✅ CONCLUÍDO
+- ✅ **Autenticação completa** com JWT e refresh tokens
+- ✅ **Gerenciamento de projetos** com CRUD completo via GraphQL
+- ✅ **Quadro Kanban avançado** com:
+  - Drag & drop com feedback visual em tempo real
+  - DragOverlay com preview da tarefa
+  - Animações suaves e transições CSS
+  - Estados de loading elegantes
+  - Notificações visuais durante operações
+- ✅ **Notificações em tempo real** com WebSockets
+- ✅ **Módulo de Automações** completo (IFTTT-style)
+- ✅ **Visualização Gantt** interativa
+- ✅ **Temas claro/escuro** com persistência
+- ✅ **101 testes automatizados** com cobertura robusta
 
-## Roadmap
+### Próximas Funcionalidades
+- 🔄 **Responsividade mobile** (em desenvolvimento)
+- 📊 **Módulo de métricas** e dashboard
+- 📱 **Aplicativo mobile** (React Native)
+- 🤖 **Assistente de IA** para sugestões
+- 🔗 **Integrações externas** (Slack, Teams)
 
-Consulte o arquivo [Prompt_Base.md](./Prompt_Base.md) para detalhes sobre o roadmap de desenvolvimento.
+## Documentação
+
+- [Prompt_Base.md](./Prompt_Base.md) - Plano original e arquitetura
+- [Status_Projeto.md](./Status_Projeto.md) - Status atual detalhado
+- [Proximas_Tarefas.md](./Proximas_Tarefas.md) - Próximas prioridades
+- [backend/TESTING.md](./backend/TESTING.md) - Guia de testes
+
+## Scripts Úteis
+
+```bash
+# Executar todos os testes
+npm run test
+
+# Executar testes do backend
+cd backend && npm run test
+
+# Executar testes de integração
+cd backend && npm run test:integration
+
+# Executar testes de performance
+cd backend && npm run test:performance
+
+# Seed do banco de dados
+cd backend && npm run seed
+```

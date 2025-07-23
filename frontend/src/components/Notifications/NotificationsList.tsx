@@ -22,14 +22,14 @@ const NotificationItem: React.FC<{
     <MenuItem
       onClick={handleClick}
       sx={{
-        backgroundColor: notification.isRead ? 'transparent' : 'rgba(25, 118, 210, 0.08)',
-        borderLeft: notification.isRead ? 'none' : '3px solid #1976d2',
+        backgroundColor: notification.read ? 'transparent' : 'rgba(25, 118, 210, 0.08)',
+        borderLeft: notification.read ? 'none' : '3px solid #1976d2',
         display: 'block',
         width: '100%',
         maxWidth: '400px',
       }}
     >
-      <Typography variant="subtitle2" sx={{ fontWeight: notification.isRead ? 'normal' : 'bold' }}>
+      <Typography variant="subtitle2" sx={{ fontWeight: notification.read ? 'normal' : 'bold' }}>
         {notification.message}
       </Typography>
       <Typography variant="caption" color="text.secondary">

@@ -3,10 +3,13 @@ import { Box, AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, L
 import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import TaskIcon from '@mui/icons-material/Task';
 import PeopleIcon from '@mui/icons-material/People';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import AutomationIcon from '@mui/icons-material/SmartToy';
+import TimelineIcon from '@mui/icons-material/Timeline';
 import { NotificationsList } from '../Notifications/NotificationsList';
 import ThemeToggle from '../common/ThemeToggle';
 import { useAuth } from '../../hooks/useAuth';
@@ -31,6 +34,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
     { text: 'Projetos', icon: <AssignmentIcon />, path: '/projects' },
+    { text: 'Tarefas', icon: <TaskIcon />, path: '/tasks' },
+    { text: 'Gantt', icon: <TimelineIcon />, path: '/gantt' },
+    { text: 'Automações', icon: <AutomationIcon />, path: '/automations' },
     { text: 'Equipe', icon: <PeopleIcon />, path: '/team' },
     { text: 'Preferências de Notificação', icon: <NotificationsIcon />, path: '/notification-preferences' },
     { text: 'Configurações', icon: <SettingsIcon />, path: '/settings' },

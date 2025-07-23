@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery, gql } from '@apollo/client';
-import { Typography, Grid, Paper, Box, CircularProgress, Card, CardContent, CardHeader, Chip, List, ListItem, ListItemText, Divider, Button, IconButton, CardActions } from '@mui/material';
-// Removidas importações desnecessárias
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import CommentIcon from '@mui/icons-material/Comment';
+import { Typography, Box } from '@mui/material';
 import { useAuth } from '../hooks/useAuth';
+import LoadingSkeleton from '../components/common/LoadingSkeleton';
+import ResponsiveContainer from '../components/common/ResponsiveContainer';
+import StatsCards from '../components/Dashboard/StatsCards';
+import RecentActivity from '../components/Dashboard/RecentActivity';
 
-const GET_USER_DASHBOARD = gql`
-  query GetUserDashboard {
+const GET_USER_PROJECTS = gql`
+  query GetUserProjects {
     projects {
       id
       name
       description
+      createdAt
       sections {
         id
         name
@@ -21,296 +23,101 @@ const GET_USER_DASHBOARD = gql`
           completed
           priority
           dueDate
+          assignee {
+            id
+            name
+          }
         }
       }
     }
   }
 `;
 
+const GET_USER_INFO = gql`
+  query GetUserInfo {
+    me {
+      id
+      name
+      email
+    }
+  }
+`;
+
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const { loading, error, data } = useQuery(GET_USER_DASHBOARD);
+  const { data: userInfo, loading: userLoading } = useQuery(GET_USER_INFO, {
+    skip: !user,
+  });
+  const { data: projectsData, loading: projectsLoading, error } = useQuery(GET_USER_PROJECTS, {
+    skip: !user,
+  });
 
-  if (loading) return <CircularProgress />;
+  const loading = userLoading || projectsLoading;
+  
+  if (loading) return (
+    <ResponsiveContainer variant="dashboard">
+      <LoadingSkeleton variant="dashboard" />
+    </ResponsiveContainer>
+  );
   if (error) return <Typography color="error">Erro ao carregar dados: {error.message}</Typography>;
 
-  // Extrair projetos
-  const projects = data?.projects || [];
-
-  // Extrair todas as tarefas de todos os projetos
-  const allTasks = projects.flatMap((project: any) =>
-    project.sections.flatMap((section: any) =>
-      section.tasks.map((task: any) => ({
-        ...task,
-        projectName: project.name,
-        sectionName: section.name,
-      }))
-    )
+  const userData = userInfo?.me;
+  const projects = projectsData?.projects || [];
+  const activities: any[] = []; // Temporariamente vazio até implementarmos as atividades recentes
+  
+  const allTasks = projects.reduce((acc: any[], project: any) => {
+    const projectTasks = project.sections?.reduce((sectionAcc: any[], section: any) => {
+      return sectionAcc.concat(section.tasks || []);
+    }, []) || [];
+    return acc.concat(projectTasks);
+  }, []);
+  const completedTasks = allTasks.filter((task: any) => task.completed);
+  const pendingTasks = allTasks.filter((task: any) => !task.completed);
+  const overdueTasks = allTasks.filter((task: any) => 
+    !task.completed && task.dueDate && new Date(task.dueDate) < new Date()
   );
 
-  // Filtrar tarefas atribuídas ao usuário atual (simulado)
-  const myTasks = allTasks.filter((task: any) => !task.completed).slice(0, 5);
+  const teamMembers = new Set(allTasks.map((task: any) => task.assignee?.id).filter(Boolean)).size;
 
-  // Filtrar tarefas com prazo próximo
-  const today = new Date();
-  const nextWeek = new Date();
-  nextWeek.setDate(today.getDate() + 7);
-
-  const upcomingTasks = allTasks
-    .filter((task: any) => {
-      if (!task.dueDate) return false;
-      const dueDate = new Date(task.dueDate);
-      return !task.completed && dueDate >= today && dueDate <= nextWeek;
-    })
-    .sort((a: any, b: any) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
-    .slice(0, 5);
+  // Dados para o componente de estatísticas
+  const statsData = {
+    totalProjects: projects.length,
+    totalTasks: allTasks.length,
+    completedTasks: completedTasks.length,
+    pendingTasks: pendingTasks.length,
+    overdueTasks: overdueTasks.length,
+    teamMembers: teamMembers,
+  };
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <Typography variant="h4" gutterBottom>
-        Dashboard
-      </Typography>
-      <Typography variant="subtitle1" gutterBottom>
-        Bem-vindo, {user?.name || 'Usuário'}!
-      </Typography>
+    <ResponsiveContainer variant="dashboard">
+      <Box sx={{ flexGrow: 1, p: { xs: 2, sm: 3 } }}>
+        <Typography 
+          variant="h4" 
+          gutterBottom
+          sx={{
+            fontWeight: 700,
+            mb: 3,
+            fontSize: { xs: '1.75rem', sm: '2.125rem' },
+          }}
+        >
+          Bem-vindo, {userData?.name || 'Usuário'}!
+        </Typography>
+        
+        {/* Estatísticas Gerais */}
+        <Box sx={{ mb: 4 }}>
+          <StatsCards data={statsData} loading={loading} />
+        </Box>
 
-      <Grid container spacing={3} sx={{ mt: 2 }}>
-        {/* Projetos Recentes */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardHeader title="Projetos Recentes" />
-            <Divider />
-            <CardContent>
-              {projects.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
-                  Nenhum projeto encontrado.
-                </Typography>
-              ) : (
-                <List>
-                  {projects.slice(0, 5).map((project: any) => (
-                    <React.Fragment key={project.id}>
-                      <ListItem button component="a" href={`/projects/${project.id}`}>
-                        <ListItemText
-                          primary={project.name}
-                          secondary={
-                            <>
-                              <Typography
-                                component="span"
-                                variant="body2"
-                                color="text.primary"
-                                noWrap
-                                sx={{ display: 'block', maxWidth: '100%' }}
-                              >
-                                {project.description || 'Sem descrição'}
-                              </Typography>
-                              <Typography component="span" variant="caption">
-                                {project.sections.reduce(
-                                  (acc: number, section: any) => acc + section.tasks.length,
-                                  0
-                                )}{' '}
-                                tarefas
-                              </Typography>
-                            </>
-                          }
-                        />
-                      </ListItem>
-                      <Divider />
-                    </React.Fragment>
-                  ))}
-                </List>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Minhas Tarefas */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardHeader title="Minhas Tarefas" />
-            <Divider />
-            <CardContent>
-              {myTasks.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
-                  Nenhuma tarefa atribuída a você.
-                </Typography>
-              ) : (
-                <List>
-                  {myTasks.map((task: any) => (
-                    <React.Fragment key={task.id}>
-                      <TaskItem 
-                        id={task.id} 
-                        task={{
-                          ...task,
-                          id: task.id,
-                          title: task.title,
-                          description: task.description,
-                          priority: task.priority,
-                          dueDate: task.dueDate,
-                          completed: task.completed,
-                          projectName: task.projectName,
-                          sectionName: task.sectionName
-                        }}
-                        sectionId="dashboard"
-                        canEdit={false}
-                        isDashboard={true}
-                      />
-                      <Divider />
-                    </React.Fragment>
-                  ))}
-                </List>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Tarefas com Prazo Próximo */}
-        <Grid item xs={12}>
-          <Card>
-            <CardHeader title="Prazos Próximos" />
-            <Divider />
-            <CardContent>
-              {upcomingTasks.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
-                  Nenhuma tarefa com prazo próximo.
-                </Typography>
-              ) : (
-                <List>
-                  {upcomingTasks.map((task: any) => (
-                    <React.Fragment key={task.id}>
-                      <TaskItem
-                        id={task.id}
-                        task={{
-                          ...task,
-                          id: task.id,
-                          title: task.title,
-                          description: task.description,
-                          priority: task.priority,
-                          dueDate: task.dueDate,
-                          completed: task.completed,
-                          projectName: task.projectName,
-                          sectionName: task.sectionName
-                        }}
-                        sectionId="upcoming"
-                        canEdit={false}
-                        isDashboard={true}
-                      />
-                      <Divider />
-                    </React.Fragment>
-                  ))}
-                </List>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
+        {/* Atividades Recentes */}
+        <Box sx={{ mb: 4 }}>
+          <RecentActivity activities={activities} loading={loading} />
+        </Box>
+      </Box>
+    </ResponsiveContainer>
   );
 };
 
-// Interface para o componente TaskItem
-interface TaskItemProps {
-  id: string;
-  task: any;
-  sectionId: string;
-  canEdit: boolean;
-  isDashboard?: boolean;
-}
 
-// Componente TaskItem simplificado
-const TaskItem = ({ id, task, isDashboard = false }: TaskItemProps) => {
-  return (
-    <Card
-      sx={{
-        mb: 2,
-        opacity: task.completed ? 0.7 : 1,
-        bgcolor: task.completed ? 'action.hover' : 'background.paper',
-      }}
-    >
-      <CardContent sx={{ pb: 1 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-          <Box display="flex" alignItems="flex-start" sx={{ width: '100%' }}>
-            <Box sx={{ width: '100%' }}>
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  textDecoration: task.completed ? 'line-through' : 'none',
-                  wordBreak: 'break-word',
-                }}
-              >
-                {task.title}
-              </Typography>
-              {task.description && (
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{
-                    mt: 1,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                  }}
-                >
-                  {task.description}
-                </Typography>
-              )}
-              {isDashboard && (
-                <Typography component="span" variant="caption" sx={{ display: 'block', mt: 1 }}>
-                  {task.projectName} &gt; {task.sectionName}
-                </Typography>
-              )}
-            </Box>
-          </Box>
-        </Box>
-
-        <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
-          {task.priority && (
-            <Chip
-              label={task.priority}
-              size="small"
-              color={
-                task.priority === 'HIGH'
-                  ? 'error'
-                  : task.priority === 'MEDIUM'
-                  ? 'warning'
-                  : 'info'
-              }
-              variant="outlined"
-            />
-          )}
-          {task.dueDate && (
-            <Chip
-              label={new Date(task.dueDate).toLocaleDateString()}
-              size="small"
-              color={new Date(task.dueDate) < new Date() ? 'error' : 'default'}
-              variant="outlined"
-            />
-          )}
-        </Box>
-      </CardContent>
-      {!isDashboard && (
-        <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 1 }}>
-          <Box>
-            <Button
-              size="small"
-              startIcon={<CommentIcon />}
-            >
-              Comentários
-            </Button>
-          </Box>
-          <Box>
-            <Button
-              size="small"
-              sx={{ ml: 'auto' }}
-            >
-              Detalhes
-            </Button>
-          </Box>
-        </CardActions>
-      )}
-    </Card>
-  );
-};
 
 export default Dashboard;

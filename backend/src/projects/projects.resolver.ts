@@ -95,4 +95,12 @@ export class ProjectsResolver {
   moveTask(@Args('moveTaskInput') moveTaskInput: MoveTaskInput): Promise<Task> {
     return this.projectsService.moveTask(moveTaskInput);
   }
+
+  @Mutation(() => Task)
+  moveTaskToSection(
+    @Args('id', { type: () => ID }) id: string,
+    @Args('sectionId', { type: () => ID }) sectionId: string
+  ): Promise<Task> {
+    return this.projectsService.moveTaskToSection(id, sectionId);
+  }
 }

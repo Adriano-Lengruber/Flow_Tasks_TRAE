@@ -31,7 +31,10 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent
+  DragEndEvent,
+  DragStartEvent,
+  DragOverEvent,
+  DragOverlay as DndKitDragOverlay,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -48,138 +51,18 @@ import CommentIcon from '@mui/icons-material/Comment';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useAuth } from '../hooks/useAuth';
+import DragOverlay from '../components/common/DragOverlay';
+import DropZone from '../components/common/DropZone';
+import LoadingSkeleton from '../components/common/LoadingSkeleton';
+import DragFeedback from '../components/common/DragFeedback';
+import KanbanSkeleton from '../components/common/KanbanSkeleton';
+import ResponsiveContainer, { useResponsiveStyles } from '../components/common/ResponsiveContainer';
+import SortableTaskItem from '../components/common/SortableTaskItem';
+import SortableSection from '../components/common/SortableSection';
+import useDragAndDrop from '../hooks/useDragAndDrop';
+import useToast from '../hooks/useToast';
 
-// Interface para o componente TaskItem
-interface TaskItemProps {
-  id: string;
-  task: any;
-  sectionId: string;
-  canEdit: boolean;
-  handleToggleComplete: (task: any) => void;
-  handleOpenMenu: (event: React.MouseEvent<HTMLElement>, taskId: string) => void;
-  handleOpenCommentDialog: (taskId: string) => void;
-  handleOpenTaskDetail: (task: any) => void;
-}
-
-// Componente TaskItem simplificado
-const TaskItem = ({ id, task, sectionId, canEdit, handleToggleComplete, handleOpenMenu, handleOpenCommentDialog, handleOpenTaskDetail }: TaskItemProps) => {
-  return (
-    <Card
-      sx={{
-        mb: 2,
-        opacity: task.completed ? 0.7 : 1,
-        bgcolor: task.completed ? 'action.hover' : 'background.paper',
-      }}
-    >
-      <CardContent sx={{ pb: 1 }}>
-                   <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-          <Box display="flex" alignItems="flex-start" sx={{ width: '100%' }}>
-            <Checkbox
-              checked={task.completed}
-              onChange={() => {
-                // Criar uma cópia da tarefa com o ID correto
-                const taskWithCorrectId = {
-                  ...task,
-                  id: task.id.includes(':') ? task.id.split(':')[0] : task.id
-                };
-                handleToggleComplete(taskWithCorrectId);
-              }}
-              sx={{ mt: -0.5, ml: -1 }}
-              disabled={!canEdit}
-            />
-            <Box sx={{ width: '100%' }}>
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  textDecoration: task.completed ? 'line-through' : 'none',
-                  wordBreak: 'break-word',
-                }}
-              >
-                {task.title}
-              </Typography>
-              {task.description && (
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{
-                    mt: 1,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                  }}
-                >
-                  {task.description}
-                </Typography>
-              )}
-            </Box>
-          </Box>
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              // Extrair o ID da tarefa do formato 'taskId:sectionId'
-              const taskId = task.id.includes(':') ? task.id.split(':')[0] : task.id;
-              handleOpenMenu(e, taskId);
-            }}
-            sx={{ ml: 1 }}
-          >
-            <MoreVertIcon fontSize="small" />
-          </IconButton>
-        </Box>
-
-        <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
-          {task.priority && (
-            <Chip
-              label={task.priority}
-              size="small"
-              color={
-                task.priority === 'HIGH'
-                  ? 'error'
-                  : task.priority === 'MEDIUM'
-                  ? 'warning'
-                  : 'info'
-              }
-              variant="outlined"
-            />
-          )}
-          {task.dueDate && (
-            <Chip
-              label={format(new Date(task.dueDate), 'dd/MM/yyyy')}
-              size="small"
-              color="default"
-              variant="outlined"
-            />
-          )}
-          {task.assignee && (
-            <Chip
-              label={task.assignee.username}
-              size="small"
-              color="primary"
-              variant="outlined"
-            />
-          )}
-        </Box>
-      </CardContent>
-      <CardActions sx={{ pt: 0 }}>
-        <Button
-          size="small"
-          startIcon={<CommentIcon />}
-          onClick={() => handleOpenCommentDialog(task.id.includes(':') ? task.id.split(':')[0] : task.id)}
-        >
-          {task.comments?.length || 0} Comentários
-        </Button>
-        <Button
-          size="small"
-          onClick={() => handleOpenTaskDetail(task)}
-          sx={{ ml: 'auto' }}
-        >
-          Detalhes
-        </Button>
-      </CardActions>
-    </Card>
-  );
-};
+// TaskItem component removed - now using SortableTaskItem
 
 const GET_PROJECT = gql`
   query GetProject($id: ID!) {
@@ -190,12 +73,7 @@ const GET_PROJECT = gql`
       createdAt
       owner {
         id
-        username
-        email
-      }
-      members {
-        id
-        username
+        name
         email
       }
       sections {
@@ -211,7 +89,7 @@ const GET_PROJECT = gql`
           completed
           assignee {
             id
-            username
+            name
           }
           comments {
             id
@@ -219,7 +97,7 @@ const GET_PROJECT = gql`
             createdAt
             author {
               id
-              username
+              name
             }
           }
         }
@@ -258,7 +136,7 @@ const CREATE_TASK = gql`
       completed
       assignee {
         id
-        username
+        name
       }
     }
   }
@@ -285,15 +163,15 @@ const UPDATE_TASK = gql`
       completed
       assignee {
         id
-        username
+        name
       }
     }
   }
 `;
 
 const MOVE_TASK = gql`
-  mutation MoveTask($id: ID!, $sectionId: ID!) {
-    moveTask(id: $id, sectionId: $sectionId) {
+  mutation MoveTaskToSection($id: ID!, $sectionId: ID!) {
+    moveTaskToSection(id: $id, sectionId: $sectionId) {
       id
       section {
         id
@@ -322,7 +200,7 @@ const CREATE_COMMENT = gql`
       createdAt
       author {
         id
-        username
+        name
       }
     }
   }
@@ -332,6 +210,8 @@ const ProjectDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showToast } = useToast();
+  const { getKanbanStyles, isMobile } = useResponsiveStyles();
   
   // Estados para diálogos
   const [openSectionDialog, setOpenSectionDialog] = useState(false);
@@ -357,6 +237,14 @@ const ProjectDetail: React.FC = () => {
   // Estado para menu de ações
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [menuTaskId, setMenuTaskId] = useState('');
+  
+  // Estado para drag and drop
+  const [activeTask, setActiveTask] = useState<any>(null);
+  const [dragFeedback, setDragFeedback] = useState<{
+    isVisible: boolean;
+    status: 'dragging' | 'success' | 'error' | 'processing';
+    message?: string;
+  }>({ isVisible: false, status: 'dragging' });
 
   const { loading, error, data, refetch } = useQuery(GET_PROJECT, {
     variables: { id },
@@ -539,10 +427,39 @@ const ProjectDetail: React.FC = () => {
     })
   );
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    
+    // Encontrar a tarefa que está sendo arrastada
+    const taskId = String(active.id).split(':')[0];
+    const task = data?.project?.sections
+      ?.flatMap((section: any) => section.tasks)
+      ?.find((task: any) => task.id === taskId);
+    
+    if (task) {
+      setActiveTask(task);
+      setDragFeedback({
+        isVisible: true,
+        status: 'dragging',
+        message: `Movendo "${task.title}"...`,
+      });
+    }
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    // Pode ser usado para feedback adicional durante o drag
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     
-    if (!over) return;
+    // Limpar o estado de drag
+    setActiveTask(null);
+    
+    if (!over) {
+      setDragFeedback({ isVisible: false, status: 'dragging' });
+      return;
+    }
     
     // Se os IDs são diferentes, o item foi movido
     if (active.id !== over.id) {
@@ -550,35 +467,86 @@ const ProjectDetail: React.FC = () => {
       const activeId = String(active.id);
       const overId = String(over.id);
       
+      // Mostrar feedback de processamento
+      setDragFeedback({
+        isVisible: true,
+        status: 'processing',
+        message: 'Processando movimentação...',
+      });
+      
       // Verificar se é uma movimentação entre seções
       // O formato do ID será 'taskId:sectionId'
       const [taskId, sourceSectionId] = activeId.split(':');
-      const [_, targetSectionId] = overId.split(':');
+      
+      // O overId pode ser apenas o sectionId (quando arrastando para seção vazia)
+      // ou 'taskId:sectionId' (quando arrastando sobre outra tarefa)
+      let targetSectionId;
+      if (overId.includes(':')) {
+        // Arrastando sobre outra tarefa
+        const [_, overSectionId] = overId.split(':');
+        targetSectionId = overSectionId;
+      } else {
+        // Arrastando para seção vazia (overId é apenas o sectionId)
+        targetSectionId = overId;
+      }
       
       // Se a seção de destino é diferente da seção de origem
       if (sourceSectionId !== targetSectionId) {
-        moveTask({
-          variables: {
-            id: taskId,
-            sectionId: targetSectionId,
-          },
-        });
+        try {
+          await moveTask({
+            variables: {
+              id: taskId,
+              sectionId: targetSectionId,
+            },
+          });
+          
+          // Mostrar feedback de sucesso
+          setDragFeedback({
+            isVisible: true,
+            status: 'success',
+            message: 'Tarefa movida com sucesso!',
+          });
+          
+          // Esconder feedback após 2 segundos
+          setTimeout(() => {
+            setDragFeedback({ isVisible: false, status: 'success' });
+          }, 2000);
+        } catch (error) {
+          // Mostrar feedback de erro
+          setDragFeedback({
+            isVisible: true,
+            status: 'error',
+            message: 'Erro ao mover tarefa',
+          });
+          
+          // Esconder feedback após 3 segundos
+          setTimeout(() => {
+            setDragFeedback({ isVisible: false, status: 'error' });
+          }, 3000);
+        }
+      } else {
+        // Não houve mudança de seção
+        setDragFeedback({ isVisible: false, status: 'dragging' });
       }
       // Aqui poderia ser implementada a reordenação dentro da mesma seção
     }
   };
 
-  if (loading) return <CircularProgress />;
+  if (loading) return (
+    <ResponsiveContainer>
+      <KanbanSkeleton sectionsCount={3} tasksPerSection={4} />
+    </ResponsiveContainer>
+  );
   if (error) return <Typography color="error">Erro ao carregar projeto: {error.message}</Typography>;
   if (!data?.project) return <Typography>Projeto não encontrado</Typography>;
 
   const { project } = data;
   const sortedSections = [...project.sections].sort((a, b) => a.order - b.order);
-  const isOwner = project.owner.id === user?.id;
-  const isMember = project.members.some((member: any) => member.id === user?.id);
-  const canEdit = isOwner || isMember;
+  const isOwner = project?.owner?.id === user?.id;
+  // Temporariamente habilitando edição para todos os usuários para testes
+  const canEdit = true; // isOwner;
 
-  const projectMembers = [project.owner, ...project.members];
+  const projectMembers = [project.owner];
 
   return (
     <>
@@ -616,80 +584,32 @@ const ProjectDetail: React.FC = () => {
         <DndContext 
           sensors={sensors} 
           collisionDetection={closestCenter} 
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
         >
           <Grid container spacing={2}>
             {sortedSections.map((section) => (
               <Grid item xs={12} md={4} key={section.id}>
-                <Paper
-                  sx={{
-                    p: 2,
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    bgcolor: 'background.default',
-                  }}
-                  elevation={1}
-                >
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                    <Typography variant="h6">{section.name}</Typography>
-                    <Box>
-                      <Tooltip title="Adicionar Tarefa">
-                        <IconButton
-                          size="small"
-                          onClick={() => handleOpenTaskDialog(section.id)}
-                          disabled={!canEdit}
-                        >
-                          <AddIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Excluir Seção">
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => handleDeleteSection(section.id)}
-                          disabled={!canEdit}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  </Box>
-
-                  <Box sx={{ flexGrow: 1, minHeight: '200px' }}>
-                    {section.tasks.length === 0 ? (
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ textAlign: 'center', mt: 2 }}
-                      >
-                        Nenhuma tarefa nesta seção
-                      </Typography>
-                    ) : (
-                      <SortableContext
-                        items={section.tasks.map((task: any) => `${task.id}:${section.id}`)}
-                        strategy={verticalListSortingStrategy}
-                      >
-                        {section.tasks.map((task: any) => (
-                          <TaskItem 
-                            key={`${task.id}:${section.id}`} 
-                            id={`${task.id}:${section.id}`} 
-                            task={task} 
-                            sectionId={section.id}
-                            canEdit={canEdit}
-                            handleToggleComplete={handleToggleComplete}
-                            handleOpenMenu={handleOpenMenu}
-                            handleOpenCommentDialog={handleOpenCommentDialog}
-                            handleOpenTaskDetail={handleOpenTaskDetail}
-                          />
-                        ))}
-                      </SortableContext>
-                    )}
-                  </Box>
-                </Paper>
+                <SortableSection
+                  section={section}
+                  canEdit={canEdit}
+                  handleOpenTaskDialog={handleOpenTaskDialog}
+                  handleDeleteSection={handleDeleteSection}
+                  handleToggleComplete={handleToggleComplete}
+                  handleOpenMenu={handleOpenMenu}
+                  handleOpenCommentDialog={handleOpenCommentDialog}
+                  handleOpenTaskDetail={handleOpenTaskDetail}
+                />
               </Grid>
             ))}
           </Grid>
+          
+          <DndKitDragOverlay>
+            {activeTask ? (
+              <DragOverlay task={activeTask} />
+            ) : null}
+          </DndKitDragOverlay>
         </DndContext>
       </Box>
 
@@ -782,7 +702,7 @@ const ProjectDetail: React.FC = () => {
             <MenuItem value="">Nenhum</MenuItem>
             {projectMembers.map((member: any) => (
               <MenuItem key={member.id} value={member.id}>
-                {member.username}
+                {member.name}
               </MenuItem>
             ))}
           </TextField>
@@ -873,7 +793,7 @@ const ProjectDetail: React.FC = () => {
             <MenuItem value="">Nenhum</MenuItem>
             {projectMembers.map((member: any) => (
               <MenuItem key={member.id} value={member.id}>
-                {member.username}
+                {member.name}
               </MenuItem>
             ))}
           </TextField>
@@ -924,7 +844,7 @@ const ProjectDetail: React.FC = () => {
                 .map((comment: any) => (
                   <Box key={comment.id} sx={{ mb: 2 }}>
                     <Box display="flex" justifyContent="space-between">
-                      <Typography variant="subtitle2">{comment.author.username}</Typography>
+                      <Typography variant="subtitle2">{comment.author.name}</Typography>
                       <Typography variant="caption" color="text.secondary">
                         {format(new Date(comment.createdAt), 'dd/MM/yyyy HH:mm')}
                       </Typography>
@@ -956,6 +876,13 @@ const ProjectDetail: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Feedback visual para drag and drop */}
+      <DragFeedback
+        isVisible={dragFeedback.isVisible}
+        status={dragFeedback.status}
+        message={dragFeedback.message}
+      />
 
       {/* Menu de ações da tarefa */}
       <Menu

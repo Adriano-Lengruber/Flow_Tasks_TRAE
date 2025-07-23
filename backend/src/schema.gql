@@ -2,9 +2,49 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+"""Tipos de ações disponíveis para automações"""
+enum ActionType {
+  ASSIGN_TASK
+  CREATE_TASK
+  MOVE_TASK
+  SEND_EMAIL
+  SEND_NOTIFICATION
+  UPDATE_TASK_PRIORITY
+}
+
 type AuthPayload {
   accessToken: String!
   user: User!
+}
+
+type Automation {
+  actionParameters: String
+  actionType: ActionType!
+  createdAt: DateTime!
+  createdBy: User!
+  description: String
+  executionCount: Float!
+  id: ID!
+  isActive: Boolean!
+  lastExecutedAt: DateTime
+  name: String!
+  project: Project
+  triggerConditions: String
+  triggerType: TriggerType!
+  updatedAt: DateTime!
+}
+
+type AutomationLog {
+  actionResult: String
+  automation: Automation!
+  errorMessage: String
+  executedAt: DateTime!
+  executionTimeMs: Float!
+  id: ID!
+  relatedTaskId: String
+  status: ExecutionStatus!
+  triggerData: String
+  triggeredBy: User
 }
 
 type Comment {
@@ -16,6 +56,17 @@ type Comment {
   updatedAt: DateTime!
 }
 
+input CreateAutomationDto {
+  actionParameters: String
+  actionType: ActionType!
+  description: String
+  isActive: Boolean
+  name: String!
+  projectId: String
+  triggerConditions: String
+  triggerType: TriggerType!
+}
+
 input CreateCommentInput {
   content: String!
   taskId: String!
@@ -23,7 +74,9 @@ input CreateCommentInput {
 
 input CreateProjectInput {
   description: String
+  endDate: String
   name: String!
+  startDate: String
 }
 
 input CreateSectionInput {
@@ -53,6 +106,13 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+"""Status de execução da automação"""
+enum ExecutionStatus {
+  FAILED
+  SKIPPED
+  SUCCESS
+}
+
 input LoginInput {
   email: String!
   password: String!
@@ -66,6 +126,7 @@ input MoveTaskInput {
 
 type Mutation {
   clearAllNotifications: Boolean!
+  createAutomation(createAutomationInput: CreateAutomationDto!): Automation!
   createComment(createCommentInput: CreateCommentInput!): Comment!
   createProject(createProjectInput: CreateProjectInput!): Project!
   createSection(createSectionInput: CreateSectionInput!): Section!
@@ -74,11 +135,15 @@ type Mutation {
   markAllNotificationsAsRead: Boolean!
   markNotificationAsRead(notificationId: String!): Boolean!
   moveTask(moveTaskInput: MoveTaskInput!): Task!
+  moveTaskToSection(id: ID!, sectionId: ID!): Task!
+  removeAutomation(id: String!): Boolean!
   removeComment(id: ID!): Boolean!
   removeProject(id: ID!): Boolean!
   removeSection(id: ID!): Boolean!
   removeTask(id: ID!): Boolean!
   signup(createUserInput: CreateUserInput!): AuthPayload!
+  toggleAutomationActive(id: String!): Automation!
+  updateAutomation(id: String!, updateAutomationInput: UpdateAutomationDto!): Automation!
   updateComment(updateCommentInput: UpdateCommentInput!): Comment!
   updateNotificationPreferences(updateNotificationPreferencesInput: UpdateNotificationPreferencesInput!): NotificationPreferences!
   updateProject(updateProjectInput: UpdateProjectInput!): Project!
@@ -129,23 +194,41 @@ enum NotificationType {
 type Project {
   createdAt: DateTime!
   description: String
+  endDate: DateTime
   id: ID!
   name: String!
-  owner: User!
+  owner: User
   sections: [Section!]
+  startDate: DateTime
   updatedAt: DateTime!
 }
 
 type Query {
+  automation(id: String!): Automation!
+  automationLogs(automationId: String!): [AutomationLog!]!
+  automations(projectId: String): [Automation!]!
   comment(id: ID!): Comment!
   comments(taskId: ID!): [Comment!]!
+  me: User!
   notificationPreferences: NotificationPreferences!
   notifications(limit: Float! = 50, offset: Float! = 0): [Notification!]!
   project(id: ID!): Project!
   projects: [Project!]!
+  recentActivities(limit: Float! = 10): [RecentActivity!]!
   section(id: ID!): Section!
   task(id: ID!): Task!
   unreadNotificationsCount: Float!
+}
+
+type RecentActivity {
+  createdAt: DateTime!
+  description: String
+  id: ID!
+  project: Project
+  task: Task
+  title: String!
+  type: String!
+  user: User!
 }
 
 type Section {
@@ -180,6 +263,28 @@ enum TaskPriority {
   URGENT
 }
 
+"""Tipos de gatilhos disponíveis para automações"""
+enum TriggerType {
+  PROJECT_COMPLETED
+  PROJECT_CREATED
+  TASK_ASSIGNED
+  TASK_COMPLETED
+  TASK_CREATED
+  TASK_DUE_DATE
+  TASK_MOVED
+}
+
+input UpdateAutomationDto {
+  actionParameters: String
+  actionType: ActionType
+  description: String
+  isActive: Boolean
+  name: String
+  projectId: String
+  triggerConditions: String
+  triggerType: TriggerType
+}
+
 input UpdateCommentInput {
   content: String
   id: ID!
@@ -200,8 +305,10 @@ input UpdateNotificationPreferencesInput {
 
 input UpdateProjectInput {
   description: String
+  endDate: String
   id: ID!
   name: String
+  startDate: String
 }
 
 input UpdateSectionInput {

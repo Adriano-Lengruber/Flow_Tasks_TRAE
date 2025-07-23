@@ -15,10 +15,13 @@ import './App.css';
 import Dashboard from './pages/Dashboard';
 import Projects from './pages/Projects';
 import ProjectDetail from './pages/ProjectDetail';
+import Tasks from './pages/Tasks';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import NotFound from './pages/NotFound';
 import NotificationPreferencesPage from './pages/NotificationPreferencesPage';
+import Automations from './pages/Automations';
+import GanttPage from './pages/Gantt';
 
 // O tema agora é gerenciado pelo ThemeContext
 
@@ -28,17 +31,15 @@ const httpLink = createHttpLink({
 });
 
 // Link para WebSocket (subscriptions)
-const wsLink = new GraphQLWsLink(
-  createClient({
-    url: 'ws://localhost:3000/graphql',
-    connectionParams: () => {
-      const token = localStorage.getItem('token');
-      return {
-        authorization: token ? `Bearer ${token}` : '',
-      };
-    },
-  })
-);
+const wsLink = new GraphQLWsLink(createClient({
+  url: 'ws://localhost:3000/graphql',
+  connectionParams: () => {
+    const token = localStorage.getItem('token');
+    return {
+      authorization: token ? `Bearer ${token}` : '',
+    };
+  },
+}));
 
 // Adicionar token de autenticação aos headers
 const authLink = setContext((_, { headers }) => {
@@ -125,15 +126,36 @@ function App() {
                 }
               />
               <Route
-                path="/notification-preferences"
+                path="/tasks"
                 element={
                   <ProtectedRoute>
                     <MainLayout>
-                      <NotificationPreferencesPage />
+                      <Tasks />
                     </MainLayout>
                   </ProtectedRoute>
                 }
               />
+              <Route path="/notification-preferences" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <NotificationPreferencesPage />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/automations" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <Automations />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/gantt" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <GanttPage />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Router>

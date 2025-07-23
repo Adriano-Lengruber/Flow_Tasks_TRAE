@@ -14,6 +14,8 @@ import { MoveTaskInput } from './dto/move-task.input';
 import { User } from '../auth/entities/user.entity';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { NotificationType } from '../notifications/enums/notification-type.enum';
+import { AutomationsService } from '../automations/automations.service';
+import { TriggerType } from '../automations/entities/automation.entity';
 
 @Injectable()
 export class ProjectsService {
@@ -25,6 +27,7 @@ export class ProjectsService {
     @InjectRepository(Task)
     private tasksRepository: Repository<Task>,
     private notificationsGateway: NotificationsGateway,
+    private automationsService: AutomationsService,
   ) {}
 
   // Project methods
@@ -44,20 +47,29 @@ export class ProjectsService {
       })
     );
 
-    return this.projectsRepository.save(project);
+    const savedProject = await this.projectsRepository.save(project);
+    
+    // Disparar automações para criação de projeto
+    await this.automationsService.executeAutomations(
+      TriggerType.PROJECT_CREATED,
+      { projectId: savedProject.id, projectName: savedProject.name },
+      user.id
+    );
+    
+    return savedProject;
   }
 
   async findAllProjects(user: User): Promise<Project[]> {
     return this.projectsRepository.find({
       where: { owner: { id: user.id } },
-      relations: ['sections', 'sections.tasks'],
+      relations: ['sections', 'sections.tasks', 'owner'],
     });
   }
 
   async findProjectById(id: string): Promise<Project> {
     const project = await this.projectsRepository.findOne({
       where: { id },
-      relations: ['sections', 'sections.tasks'],
+      relations: ['sections', 'sections.tasks', 'owner'],
     });
 
     if (!project) {
@@ -143,6 +155,20 @@ export class ProjectsService {
 
     const savedTask = await this.tasksRepository.save(task);
     
+    // Disparar automações para criação de tarefa
+    await this.automationsService.executeAutomations(
+      TriggerType.TASK_CREATED,
+      {
+        taskId: savedTask.id,
+        taskTitle: savedTask.title,
+        sectionId: savedTask.section.id,
+        projectId: section.project?.id,
+        assigneeId: createTaskInput.assigneeId
+      },
+      // Assumindo que temos acesso ao usuário que criou a tarefa
+      createTaskInput.assigneeId
+    );
+    
     // Notificar sobre a criação da tarefa se houver um assignee
     if (createTaskInput.assigneeId) {
       await this.notificationsGateway.sendNotification(
@@ -150,6 +176,18 @@ export class ProjectsService {
         NotificationType.TASK_ASSIGNED,
         `Uma nova tarefa foi atribuída a você: ${savedTask.title}`,
         { id: savedTask.id, type: 'task' }
+      );
+      
+      // Disparar automações para atribuição de tarefa
+      await this.automationsService.executeAutomations(
+        TriggerType.TASK_ASSIGNED,
+        {
+          taskId: savedTask.id,
+          taskTitle: savedTask.title,
+          assigneeId: createTaskInput.assigneeId,
+          projectId: section.project?.id
+        },
+        createTaskInput.assigneeId
       );
     }
     
@@ -191,6 +229,20 @@ export class ProjectsService {
         `A tarefa "${updatedTask.title}" foi atribuída a você`,
         { id: updatedTask.id, type: 'task' }
       );
+      
+      // Disparar automações para atribuição de tarefa
+      const section = await this.findSectionById(updatedTask.section.id);
+      await this.automationsService.executeAutomations(
+        TriggerType.TASK_ASSIGNED,
+        {
+          taskId: updatedTask.id,
+          taskTitle: updatedTask.title,
+          assigneeId: updateTaskInput.assigneeId,
+          previousAssigneeId,
+          projectId: section.project?.id
+        },
+        updateTaskInput.assigneeId
+      );
     }
     
     // Notificar sobre conclusão da tarefa
@@ -204,6 +256,19 @@ export class ProjectsService {
         NotificationType.TASK_COMPLETED,
         `A tarefa "${updatedTask.title}" foi concluída`,
         { id: updatedTask.id, type: 'task' }
+      );
+      
+      // Disparar automações para conclusão de tarefa
+      await this.automationsService.executeAutomations(
+        TriggerType.TASK_COMPLETED,
+        {
+          taskId: updatedTask.id,
+          taskTitle: updatedTask.title,
+          sectionId: updatedTask.section.id,
+          projectId: project.id,
+          assigneeId: updatedTask.assignee?.id
+        },
+        updatedTask.assignee?.id
       );
       
       // Broadcast para todos no projeto
@@ -273,8 +338,36 @@ export class ProjectsService {
           fromSection: originalSectionId,
           toSection: targetSectionId
         });
+        
+        // Disparar automações para movimentação de tarefa
+        await this.automationsService.executeAutomations(
+          TriggerType.TASK_MOVED,
+          {
+            taskId: task.id,
+            taskTitle: task.title,
+            fromSectionId: originalSectionId,
+            toSectionId: targetSectionId,
+            toSectionName: targetSection.name,
+            projectId: project.id,
+            assigneeId: task.assignee?.id,
+            newOrder
+          },
+          task.assignee?.id
+        );
       }
     }
+    
+    return updatedTask;
+  }
+
+  async moveTaskToSection(id: string, sectionId: string): Promise<Task> {
+    const task = await this.findTaskById(id);
+    const targetSection = await this.findSectionById(sectionId);
+    
+    // Update task's section
+    task.section = targetSection;
+    
+    const updatedTask = await this.tasksRepository.save(task);
     
     return updatedTask;
   }

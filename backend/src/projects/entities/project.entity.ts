@@ -18,6 +18,14 @@ export class Project {
   @Column({ nullable: true })
   description?: string;
 
+  @Field({ nullable: true })
+  @Column({ type: 'date', nullable: true })
+  startDate?: Date;
+
+  @Field({ nullable: true })
+  @Column({ type: 'date', nullable: true })
+  endDate?: Date;
+
   @Field(() => [Section], { nullable: true })
   @OneToMany(() => Section, (section) => section.project, {
     cascade: true,
@@ -25,9 +33,9 @@ export class Project {
   })
   sections?: Section[];
 
-  @Field(() => User)
-  @ManyToOne(() => User, (user) => user.projects)
-  owner: User;
+  @Field(() => User, { nullable: true })
+  @ManyToOne(() => User, (user) => user.projects, { nullable: true })
+  owner?: User;
 
   @Field()
   @Column({ default: () => 'CURRENT_TIMESTAMP' })

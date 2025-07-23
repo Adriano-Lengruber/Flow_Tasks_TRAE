@@ -25,6 +25,8 @@ import { Link } from 'react-router-dom';
 import useToast from '../hooks/useToast';
 import Toast from '../components/common/Toast';
 import Loading from '../components/common/Loading';
+import LoadingSkeleton from '../components/common/LoadingSkeleton';
+import ResponsiveContainer from '../components/common/ResponsiveContainer';
 
 const GET_PROJECTS = gql`
   query GetProjects {
@@ -47,11 +49,13 @@ const GET_PROJECTS = gql`
 `;
 
 const CREATE_PROJECT = gql`
-  mutation CreateProject($name: String!, $description: String) {
-    createProject(createProjectInput: { name: $name, description: $description }) {
+  mutation CreateProject($name: String!, $description: String, $startDate: DateTime, $endDate: DateTime) {
+    createProject(createProjectInput: { name: $name, description: $description, startDate: $startDate, endDate: $endDate }) {
       id
       name
       description
+      startDate
+      endDate
     }
   }
 `;
@@ -66,7 +70,9 @@ const Projects: React.FC = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
-  const [editingProject, setEditingProject] = useState<{ id: string; name: string; description: string } | null>(null);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [editingProject, setEditingProject] = useState<{ id: string; name: string; description: string; startDate?: string; endDate?: string } | null>(null);
   const { toast, showError, showSuccess, hideToast } = useToast();
 
   const { loading, error, data, refetch } = useQuery(GET_PROJECTS, {
@@ -80,6 +86,8 @@ const Projects: React.FC = () => {
       setOpenDialog(false);
       setProjectName('');
       setProjectDescription('');
+      setStartDate('');
+      setEndDate('');
       showSuccess('Projeto criado com sucesso!');
       refetch();
     },
@@ -107,6 +115,8 @@ const Projects: React.FC = () => {
         variables: {
           name: projectName,
           description: projectDescription || undefined,
+          startDate: startDate || undefined,
+          endDate: endDate || undefined,
         },
       });
     }
@@ -145,7 +155,11 @@ const Projects: React.FC = () => {
     return Math.round((completedTasks / totalTasks) * 100);
   };
 
-  if (loading) return <Loading />;
+  if (loading) return (
+    <ResponsiveContainer variant="dashboard">
+      <LoadingSkeleton variant="project-list" count={6} />
+    </ResponsiveContainer>
+  );
   if (error) return <Typography color="error">Erro ao carregar projetos: {error.message}</Typography>;
 
   const projects = data?.projects || [];
@@ -257,6 +271,32 @@ const Projects: React.FC = () => {
             onChange={(e) => setProjectDescription(e.target.value)}
             multiline
             rows={4}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="Data de Início"
+            type="date"
+            fullWidth
+            variant="outlined"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="Data de Fim"
+            type="date"
+            fullWidth
+            variant="outlined"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            InputLabelProps={{
+              shrink: true,
+            }}
           />
         </DialogContent>
         <DialogActions>
