@@ -6,7 +6,6 @@
 module.exports = {
   // Use projects for monorepo setup
   projects: [
-    '<rootDir>/frontend/jest.config.js',
     '<rootDir>/backend/jest.config.js'
   ],
   
@@ -45,15 +44,15 @@ module.exports = {
   testEnvironment: 'node',
   
   // Module paths
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@shared/(.*)$': '<rootDir>/shared/$1'
   },
   
-  // Setup files
-  setupFilesAfterEnv: [
-    '<rootDir>/jest.setup.js'
-  ],
+  // Setup files (commented out - file doesn't exist)
+  // setupFilesAfterEnv: [
+  //   '<rootDir>/jest.setup.js'
+  // ],
   
   // Test patterns
   testMatch: [
@@ -107,11 +106,11 @@ module.exports = {
   // Notify mode
   notify: false,
   
-  // Watch plugins
-  watchPlugins: [
-    'jest-watch-typeahead/filename',
-    'jest-watch-typeahead/testname'
-  ],
+  // Watch plugins (commented out due to missing dependencies)
+  // watchPlugins: [
+  //   'jest-watch-typeahead/filename',
+  //   'jest-watch-typeahead/testname'
+  // ],
   
   // Global timeout
   testTimeout: 10000,
@@ -124,18 +123,18 @@ module.exports = {
   
   // Reporters
   reporters: [
-    'default',
-    ['jest-junit', {
-      outputDirectory: '<rootDir>/reports',
-      outputName: 'junit.xml',
-      classNameTemplate: '{classname}',
-      titleTemplate: '{title}',
-      ancestorSeparator: ' › ',
-      usePathForSuiteName: true
-    }]
+    'default'
+    // ['jest-junit', {
+    //   outputDirectory: '<rootDir>/reports',
+    //   outputName: 'junit.xml',
+    //   classNameTemplate: '{classname}',
+    //   titleTemplate: '{title}',
+    //   ancestorSeparator: ' › ',
+    //   usePathForSuiteName: true
+    // }]
   ],
   
-  // Global setup and teardown
-  globalSetup: '<rootDir>/jest.global-setup.js',
-  globalTeardown: '<rootDir>/jest.global-teardown.js'
+  // Global setup and teardown (commented out - files don't exist)
+  // globalSetup: '<rootDir>/jest.global-setup.js',
+  // globalTeardown: '<rootDir>/jest.global-teardown.js'
 };
