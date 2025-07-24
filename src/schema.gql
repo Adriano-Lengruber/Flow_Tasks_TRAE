@@ -1,0 +1,340 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+"""Tipos de ações disponíveis para automações"""
+enum ActionType {
+  ASSIGN_TASK
+  CREATE_TASK
+  MOVE_TASK
+  SEND_EMAIL
+  SEND_NOTIFICATION
+  UPDATE_TASK_PRIORITY
+}
+
+type AuthPayload {
+  accessToken: String!
+  user: User!
+}
+
+type Automation {
+  actionParameters: String
+  actionType: ActionType!
+  createdAt: DateTime!
+  createdBy: User!
+  description: String
+  executionCount: Float!
+  id: ID!
+  isActive: Boolean!
+  lastExecutedAt: DateTime
+  name: String!
+  project: Project
+  triggerConditions: String
+  triggerType: TriggerType!
+  updatedAt: DateTime!
+}
+
+type AutomationLog {
+  actionResult: String
+  automation: Automation!
+  errorMessage: String
+  executedAt: DateTime!
+  executionTimeMs: Float!
+  id: ID!
+  relatedTaskId: String
+  status: ExecutionStatus!
+  triggerData: String
+  triggeredBy: User
+}
+
+type Comment {
+  author: User!
+  content: String!
+  createdAt: DateTime!
+  id: ID!
+  task: Task!
+  updatedAt: DateTime!
+}
+
+input CreateAutomationDto {
+  actionParameters: String
+  actionType: ActionType!
+  description: String
+  isActive: Boolean
+  name: String!
+  projectId: String
+  triggerConditions: String
+  triggerType: TriggerType!
+}
+
+input CreateCommentInput {
+  content: String!
+  taskId: String!
+}
+
+input CreateProjectInput {
+  description: String
+  endDate: String
+  name: String!
+  startDate: String
+}
+
+input CreateSectionInput {
+  name: String!
+  order: Float
+  projectId: ID!
+}
+
+input CreateTaskInput {
+  assigneeId: ID
+  description: String
+  dueDate: DateTime
+  order: Float
+  priority: TaskPriority
+  sectionId: ID!
+  title: String!
+}
+
+input CreateUserInput {
+  email: String!
+  name: String
+  password: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+"""Status de execução da automação"""
+enum ExecutionStatus {
+  FAILED
+  SKIPPED
+  SUCCESS
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+input MoveTaskInput {
+  newOrder: Float!
+  targetSectionId: ID!
+  taskId: ID!
+}
+
+type Mutation {
+  clearAllNotifications: Boolean!
+  createAutomation(createAutomationInput: CreateAutomationDto!): Automation!
+  createComment(createCommentInput: CreateCommentInput!): Comment!
+  createProject(createProjectInput: CreateProjectInput!): Project!
+  createSection(createSectionInput: CreateSectionInput!): Section!
+  createTask(createTaskInput: CreateTaskInput!): Task!
+  login(loginInput: LoginInput!): AuthPayload!
+  markAllNotificationsAsRead: Boolean!
+  markNotificationAsRead(notificationId: String!): Boolean!
+  moveTask(moveTaskInput: MoveTaskInput!): Task!
+  moveTaskToSection(id: ID!, sectionId: ID!): Task!
+  removeAutomation(id: String!): Boolean!
+  removeComment(id: ID!): Boolean!
+  removeProject(id: ID!): Boolean!
+  removeSection(id: ID!): Boolean!
+  removeTask(id: ID!): Boolean!
+  signup(createUserInput: CreateUserInput!): AuthPayload!
+  toggleAutomationActive(id: String!): Automation!
+  updateAutomation(id: String!, updateAutomationInput: UpdateAutomationDto!): Automation!
+  updateComment(updateCommentInput: UpdateCommentInput!): Comment!
+  updateNotificationPreferences(updateNotificationPreferencesInput: UpdateNotificationPreferencesInput!): NotificationPreferences!
+  updateProject(updateProjectInput: UpdateProjectInput!): Project!
+  updateSection(updateSectionInput: UpdateSectionInput!): Section!
+  updateTask(updateTaskInput: UpdateTaskInput!): Task!
+}
+
+type Notification {
+  createdAt: DateTime!
+  entityId: String
+  entityType: String
+  id: ID!
+  message: String!
+  read: Boolean!
+  type: NotificationType!
+  updatedAt: DateTime!
+  user: User!
+}
+
+type NotificationPreferences {
+  createdAt: DateTime!
+  deadlineApproaching: Boolean!
+  emailNotifications: Boolean!
+  id: ID!
+  projectCreated: Boolean!
+  projectUpdated: Boolean!
+  pushNotifications: Boolean!
+  taskAssigned: Boolean!
+  taskComment: Boolean!
+  taskCompleted: Boolean!
+  taskMoved: Boolean!
+  updatedAt: DateTime!
+  user: User!
+}
+
+"""Tipos de notificações disponíveis no sistema"""
+enum NotificationType {
+  DEADLINE_APPROACHING
+  PROJECT_CREATED
+  PROJECT_UPDATED
+  SYSTEM
+  TASK_ASSIGNED
+  TASK_COMMENT
+  TASK_COMPLETED
+  TASK_MOVED
+}
+
+type Project {
+  createdAt: DateTime!
+  description: String
+  endDate: DateTime
+  id: ID!
+  name: String!
+  owner: User
+  sections: [Section!]
+  startDate: DateTime
+  updatedAt: DateTime!
+}
+
+type Query {
+  automation(id: String!): Automation!
+  automationLogs(automationId: String!): [AutomationLog!]!
+  automations(projectId: String): [Automation!]!
+  comment(id: ID!): Comment!
+  comments(taskId: ID!): [Comment!]!
+  me: User!
+  notificationPreferences: NotificationPreferences!
+  notifications(limit: Float! = 50, offset: Float! = 0): [Notification!]!
+  project(id: ID!): Project!
+  projects: [Project!]!
+  recentActivities(limit: Float! = 10): [RecentActivity!]!
+  section(id: ID!): Section!
+  task(id: ID!): Task!
+  unreadNotificationsCount: Float!
+}
+
+type RecentActivity {
+  createdAt: DateTime!
+  description: String
+  id: ID!
+  project: Project
+  task: Task
+  title: String!
+  type: String!
+  user: User!
+}
+
+type Section {
+  createdAt: DateTime!
+  id: ID!
+  name: String!
+  order: Float!
+  project: Project!
+  tasks: [Task!]
+  updatedAt: DateTime!
+}
+
+type Task {
+  assignee: User
+  comments: [Comment!]
+  completed: Boolean!
+  createdAt: DateTime!
+  description: String
+  dueDate: DateTime
+  id: ID!
+  order: Float!
+  priority: TaskPriority!
+  section: Section!
+  title: String!
+  updatedAt: DateTime!
+}
+
+enum TaskPriority {
+  HIGH
+  LOW
+  MEDIUM
+  URGENT
+}
+
+"""Tipos de gatilhos disponíveis para automações"""
+enum TriggerType {
+  PROJECT_COMPLETED
+  PROJECT_CREATED
+  TASK_ASSIGNED
+  TASK_COMPLETED
+  TASK_CREATED
+  TASK_DUE_DATE
+  TASK_MOVED
+}
+
+input UpdateAutomationDto {
+  actionParameters: String
+  actionType: ActionType
+  description: String
+  isActive: Boolean
+  name: String
+  projectId: String
+  triggerConditions: String
+  triggerType: TriggerType
+}
+
+input UpdateCommentInput {
+  content: String
+  id: ID!
+  taskId: String
+}
+
+input UpdateNotificationPreferencesInput {
+  deadlineApproaching: Boolean
+  emailNotifications: Boolean
+  projectCreated: Boolean
+  projectUpdated: Boolean
+  pushNotifications: Boolean
+  taskAssigned: Boolean
+  taskComment: Boolean
+  taskCompleted: Boolean
+  taskMoved: Boolean
+}
+
+input UpdateProjectInput {
+  description: String
+  endDate: String
+  id: ID!
+  name: String
+  startDate: String
+}
+
+input UpdateSectionInput {
+  id: ID!
+  name: String
+  order: Float
+  projectId: ID
+}
+
+input UpdateTaskInput {
+  assigneeId: ID
+  description: String
+  dueDate: DateTime
+  id: ID!
+  order: Float
+  priority: TaskPriority
+  sectionId: ID
+  title: String
+}
+
+type User {
+  createdAt: DateTime!
+  email: String!
+  id: ID!
+  name: String!
+  notificationPreferences: NotificationPreferences
+  projects: [Project!]
+  updatedAt: DateTime!
+}
