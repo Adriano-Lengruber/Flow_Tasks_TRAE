@@ -191,6 +191,27 @@ enum NotificationType {
   TASK_MOVED
 }
 
+type PaginatedProjects {
+  hasMore: Boolean!
+  items: [Project!]!
+  limit: Int!
+  offset: Int!
+  total: Int!
+}
+
+type PaginatedTasks {
+  hasMore: Boolean!
+  items: [Task!]!
+  limit: Int!
+  offset: Int!
+  total: Int!
+}
+
+input PaginationInput {
+  limit: Int = 20
+  offset: Int = 0
+}
+
 type Project {
   createdAt: DateTime!
   description: String
@@ -214,9 +235,11 @@ type Query {
   notifications(limit: Float! = 50, offset: Float! = 0): [Notification!]!
   project(id: ID!): Project!
   projects: [Project!]!
+  projectsPaginated(pagination: PaginationInput): PaginatedProjects!
   recentActivities(limit: Float! = 10): [RecentActivity!]!
   section(id: ID!): Section!
   task(id: ID!): Task!
+  tasksPaginated(pagination: PaginationInput, projectId: ID!): PaginatedTasks!
   unreadNotificationsCount: Float!
 }
 

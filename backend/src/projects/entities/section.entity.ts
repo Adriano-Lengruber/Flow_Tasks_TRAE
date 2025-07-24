@@ -25,7 +25,6 @@ export class Section {
   @Field(() => [Task], { nullable: true })
   @OneToMany(() => Task, (task) => task.section, {
     cascade: true,
-    eager: true,
   })
   tasks?: Task[];
 

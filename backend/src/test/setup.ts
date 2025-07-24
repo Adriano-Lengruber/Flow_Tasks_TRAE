@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { DataSource } from 'typeorm';
 
 // Global test setup
 beforeAll(async () => {
@@ -6,6 +7,11 @@ beforeAll(async () => {
   process.env.NODE_ENV = 'test';
   process.env.JWT_SECRET = 'test-jwt-secret';
   process.env.DATABASE_URL = ':memory:';
+});
+
+// Setup to disable foreign key constraints for SQLite
+beforeEach(async () => {
+  // This will be handled by individual test files
 });
 
 // Global test teardown

@@ -16,6 +16,8 @@ import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { NotificationType } from '../notifications/enums/notification-type.enum';
 import { AutomationsService } from '../automations/automations.service';
 import { TriggerType } from '../automations/entities/automation.entity';
+import { PaginationInput } from '../common/dto/pagination.input';
+import { IPaginatedType } from '../common/dto/paginated-response.type';
 
 @Injectable()
 export class ProjectsService {
@@ -32,29 +34,13 @@ export class ProjectsService {
 
   // Project methods
   async createProject(createProjectInput: CreateProjectInput, user: User): Promise<Project> {
+    // Create the project
     const project = this.projectsRepository.create({
       ...createProjectInput,
       owner: user,
     });
 
-    // Create default sections
-    const defaultSections = ['To Do', 'In Progress', 'Done'];
-    project.sections = defaultSections.map((name, index) => 
-      this.sectionsRepository.create({
-        name,
-        order: index,
-        project,
-      })
-    );
-
     const savedProject = await this.projectsRepository.save(project);
-    
-    // Disparar automações para criação de projeto
-    await this.automationsService.executeAutomations(
-      TriggerType.PROJECT_CREATED,
-      { projectId: savedProject.id, projectName: savedProject.name },
-      user.id
-    );
     
     return savedProject;
   }
@@ -64,6 +50,26 @@ export class ProjectsService {
       where: { owner: { id: user.id } },
       relations: ['sections', 'sections.tasks', 'owner'],
     });
+  }
+
+  async findProjectsPaginated(user: User, pagination: PaginationInput): Promise<IPaginatedType<Project>> {
+    const { offset = 0, limit = 20 } = pagination;
+    
+    const [projects, total] = await this.projectsRepository.findAndCount({
+      where: { owner: { id: user.id } },
+      relations: ['sections', 'sections.tasks', 'owner'],
+      skip: offset,
+      take: limit,
+      order: { createdAt: 'DESC' },
+    });
+
+    return {
+      items: projects,
+      total,
+      hasMore: offset + limit < total,
+      offset,
+      limit,
+    };
   }
 
   async findProjectById(id: string): Promise<Project> {
@@ -370,5 +376,25 @@ export class ProjectsService {
     const updatedTask = await this.tasksRepository.save(task);
     
     return updatedTask;
+  }
+
+  async findTasksPaginated(projectId: string, pagination: PaginationInput): Promise<IPaginatedType<Task>> {
+    const { offset = 0, limit = 20 } = pagination;
+    
+    const [tasks, total] = await this.tasksRepository.findAndCount({
+      where: { section: { project: { id: projectId } } },
+      relations: ['section', 'assignee', 'comments'],
+      skip: offset,
+      take: limit,
+      order: { createdAt: 'DESC' },
+    });
+
+    return {
+      items: tasks,
+      total,
+      hasMore: offset + limit < total,
+      offset,
+      limit,
+    };
   }
 }

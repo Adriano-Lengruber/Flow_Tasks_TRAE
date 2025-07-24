@@ -29,7 +29,6 @@ export class Project {
   @Field(() => [Section], { nullable: true })
   @OneToMany(() => Section, (section) => section.project, {
     cascade: true,
-    eager: true,
   })
   sections?: Section[];
 
@@ -38,10 +37,10 @@ export class Project {
   owner?: User;
 
   @Field()
-  @Column({ default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
   @Field()
-  @Column({ default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
 }

@@ -14,6 +14,9 @@ import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { User } from '../auth/entities/user.entity';
+import { PaginationInput } from '../common/dto/pagination.input';
+import { PaginatedProjects } from './dto/paginated-projects.type';
+import { PaginatedTasks } from './dto/paginated-tasks.type';
 
 @Resolver(() => Project)
 @UseGuards(JwtAuthGuard)
@@ -32,6 +35,14 @@ export class ProjectsResolver {
   @Query(() => [Project], { name: 'projects' })
   findAllProjects(@CurrentUser() user: User): Promise<Project[]> {
     return this.projectsService.findAllProjects(user);
+  }
+
+  @Query(() => PaginatedProjects, { name: 'projectsPaginated' })
+  findProjectsPaginated(
+    @CurrentUser() user: User,
+    @Args('pagination', { nullable: true }) pagination: PaginationInput = new PaginationInput(),
+  ): Promise<PaginatedProjects> {
+    return this.projectsService.findProjectsPaginated(user, pagination);
   }
 
   @Query(() => Project, { name: 'project' })
@@ -79,6 +90,14 @@ export class ProjectsResolver {
   @Query(() => Task, { name: 'task' })
   findTaskById(@Args('id', { type: () => ID }) id: string): Promise<Task> {
     return this.projectsService.findTaskById(id);
+  }
+
+  @Query(() => PaginatedTasks, { name: 'tasksPaginated' })
+  findTasksPaginated(
+    @Args('projectId', { type: () => ID }) projectId: string,
+    @Args('pagination', { nullable: true }) pagination: PaginationInput = new PaginationInput(),
+  ): Promise<PaginatedTasks> {
+    return this.projectsService.findTasksPaginated(projectId, pagination);
   }
 
   @Mutation(() => Task)
