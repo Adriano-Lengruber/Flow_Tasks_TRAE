@@ -31,6 +31,7 @@ import {
 } from '@mui/icons-material';
 import { NotificationsList } from '../Notifications/NotificationsList';
 import ThemeToggle from '../common/ThemeToggle';
+import { OfflineIndicator } from '../common/OfflineIndicator';
 import { useAuth } from '../../hooks/useAuth';
 import { Link, useLocation } from 'react-router-dom';
 import BottomNavigation from './BottomNavigation';
@@ -233,6 +234,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             alignItems: 'center', 
             gap: { xs: 0.5, sm: 1 }, // Gap responsivo
           }}>
+            <OfflineIndicator />
             <ThemeToggle />
             {user && <NotificationsList />}
           </Box>

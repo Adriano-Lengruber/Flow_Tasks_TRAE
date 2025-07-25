@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ApolloClient, InMemoryCache, ApolloProvider, createHttpLink, split } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
@@ -10,6 +10,8 @@ import { NotificationsProvider } from './components/Notifications/NotificationsP
 import { ThemeProvider } from './contexts/ThemeContext';
 import { MainLayout } from './components/Layout/MainLayout';
 import LoadingSkeleton from './components/common/LoadingSkeleton';
+import { register as registerSW } from './utils/serviceWorker';
+import useToast from './hooks/useToast';
 // Páginas sem lazy loading (carregamento imediato)
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -89,112 +91,141 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
+// Componente interno para usar hooks
+const AppContent: React.FC = () => {
+  const { showToast } = useToast();
+
+  useEffect(() => {
+    // Registrar Service Worker
+    registerSW({
+      onSuccess: (registration) => {
+        console.log('[App] Service Worker registrado com sucesso:', registration);
+        showToast('Aplicação pronta para uso offline', 'success');
+      },
+      onUpdate: (registration) => {
+        console.log('[App] Nova versão disponível:', registration);
+        showToast('Nova versão disponível - Recarregue a página para atualizar', 'info');
+      },
+      onOffline: () => {
+        showToast('Modo offline ativado', 'warning');
+      },
+      onOnline: () => {
+        showToast('Conexão restaurada', 'success');
+      }
+    });
+  }, [showToast]);
+
+  return (
+    <Router>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Suspense fallback={<LoadingSkeleton />}>
+                  <Dashboard />
+                </Suspense>
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/projects"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Suspense fallback={<LoadingSkeleton />}>
+                  <Projects />
+                </Suspense>
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/projects/:id"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Suspense fallback={<LoadingSkeleton />}>
+                  <ProjectDetail />
+                </Suspense>
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tasks"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Suspense fallback={<LoadingSkeleton />}>
+                  <Tasks />
+                </Suspense>
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/notification-preferences" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <Suspense fallback={<LoadingSkeleton />}>
+                <NotificationPreferencesPage />
+              </Suspense>
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/automations" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <Suspense fallback={<LoadingSkeleton />}>
+                <Automations />
+              </Suspense>
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/gantt" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <Suspense fallback={<LoadingSkeleton />}>
+                <GanttPage />
+              </Suspense>
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/admin" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <Suspense fallback={<LoadingSkeleton />}>
+                <AdminDashboard />
+              </Suspense>
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/metrics" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <Suspense fallback={<LoadingSkeleton />}>
+                <MetricsDashboardPage />
+              </Suspense>
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Router>
+  );
+};
+
 function App() {
   // Envolver o ApolloProvider em uma função para evitar problemas com hooks
   const AppWithProviders = () => (
     <ThemeProvider>
       <AuthProvider>
         <NotificationsProvider>
-          <Router>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <MainLayout>
-                      <Suspense fallback={<LoadingSkeleton />}>
-                        <Dashboard />
-                      </Suspense>
-                    </MainLayout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/projects"
-                element={
-                  <ProtectedRoute>
-                    <MainLayout>
-                      <Suspense fallback={<LoadingSkeleton />}>
-                        <Projects />
-                      </Suspense>
-                    </MainLayout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/projects/:id"
-                element={
-                  <ProtectedRoute>
-                    <MainLayout>
-                      <Suspense fallback={<LoadingSkeleton />}>
-                        <ProjectDetail />
-                      </Suspense>
-                    </MainLayout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/tasks"
-                element={
-                  <ProtectedRoute>
-                    <MainLayout>
-                      <Suspense fallback={<LoadingSkeleton />}>
-                        <Tasks />
-                      </Suspense>
-                    </MainLayout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/notification-preferences" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <Suspense fallback={<LoadingSkeleton />}>
-                      <NotificationPreferencesPage />
-                    </Suspense>
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/automations" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <Suspense fallback={<LoadingSkeleton />}>
-                      <Automations />
-                    </Suspense>
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/gantt" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <Suspense fallback={<LoadingSkeleton />}>
-                      <GanttPage />
-                    </Suspense>
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/admin" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <Suspense fallback={<LoadingSkeleton />}>
-                      <AdminDashboard />
-                    </Suspense>
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/metrics" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <Suspense fallback={<LoadingSkeleton />}>
-                      <MetricsDashboardPage />
-                    </Suspense>
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Router>
+          <AppContent />
         </NotificationsProvider>
       </AuthProvider>
     </ThemeProvider>
