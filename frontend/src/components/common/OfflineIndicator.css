@@ -1,0 +1,360 @@
+/* Estilos para o componente OfflineIndicator */
+/* Design moderno e responsivo para indicador de status offline */
+
+.offline-indicator {
+  position: relative;
+  display: inline-block;
+  z-index: 1000;
+}
+
+/* Badge de status principal */
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 2px solid transparent;
+  user-select: none;
+}
+
+.status-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Cores do status */
+.status-green {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.status-yellow {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+}
+
+.status-orange {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: white;
+}
+
+.status-gray {
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+  color: white;
+}
+
+.status-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.status-text {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Painel de detalhes */
+.offline-panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  width: 320px;
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  animation: slideIn 0.3s ease-out;
+  z-index: 1001;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header do painel */
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Conteúdo do painel */
+.panel-content {
+  padding: 1.25rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Seções do status */
+.status-section {
+  margin-bottom: 1.5rem;
+}
+
+.status-section:last-of-type {
+  margin-bottom: 1rem;
+}
+
+.status-section h4 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 0.5rem;
+}
+
+/* Itens de status */
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.status-item:last-child {
+  border-bottom: none;
+}
+
+.status-item .label {
+  font-weight: 500;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.status-item .value {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+/* Cores dos valores */
+.value.online {
+  color: #059669;
+}
+
+.value.offline {
+  color: #dc2626;
+}
+
+.value.ready {
+  color: #059669;
+}
+
+.value.loading {
+  color: #d97706;
+}
+
+.value.pending {
+  color: #dc2626;
+  background: #fef2f2;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  border: 1px solid #fecaca;
+}
+
+/* Ações do painel */
+.panel-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sync-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.sync-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-1px);
+}
+
+.clear-btn {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+}
+
+.clear-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transform: translateY(-1px);
+}
+
+/* Informações adicionais */
+.panel-info {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 1rem;
+}
+
+.info-text {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #6b7280;
+  padding: 0.75rem;
+  background: #f9fafb;
+  border-radius: 0.5rem;
+  border-left: 4px solid #3b82f6;
+}
+
+.info-text:last-child {
+  margin-bottom: 0;
+}
+
+.info-text.warning {
+  background: #fffbeb;
+  border-left-color: #f59e0b;
+  color: #92400e;
+}
+
+.info-text strong {
+  color: #374151;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .offline-panel {
+    width: 280px;
+    right: -1rem;
+  }
+  
+  .panel-content {
+    padding: 1rem;
+  }
+  
+  .panel-actions {
+    flex-direction: column;
+  }
+  
+  .action-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .offline-panel {
+    width: calc(100vw - 2rem);
+    right: -1rem;
+    left: -1rem;
+  }
+}
+
+/* Animações de loading */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.action-btn:disabled .sync-icon,
+.status-badge .status-icon {
+  animation: spin 1s linear infinite;
+}
+
+/* Estados de hover para melhor UX */
+.status-badge:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.action-btn:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Tema escuro (opcional) */
+@media (prefers-color-scheme: dark) {
+  .offline-panel {
+    background: #1f2937;
+    border-color: #374151;
+  }
+  
+  .panel-content {
+    color: #f9fafb;
+  }
+  
+  .status-section h4 {
+    color: #f3f4f6;
+    border-bottom-color: #374151;
+  }
+  
+  .status-item {
+    border-bottom-color: #374151;
+  }
+  
+  .status-item .label {
+    color: #9ca3af;
+  }
+  
+  .info-text {
+    background: #374151;
+    color: #d1d5db;
+  }
+  
+  .info-text strong {
+    color: #f3f4f6;
+  }
+  
+  .panel-info {
+    border-top-color: #374151;
+  }
+}
