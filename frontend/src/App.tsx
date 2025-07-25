@@ -24,6 +24,7 @@ const Tasks = React.lazy(() => import('./pages/Tasks'));
 const NotificationPreferencesPage = React.lazy(() => import('./pages/NotificationPreferencesPage'));
 const Automations = React.lazy(() => import('./pages/Automations'));
 const GanttPage = React.lazy(() => import('./pages/Gantt'));
+const MetricsDashboardPage = React.lazy(() => import('./pages/MetricsDashboardPage'));
 
 // O tema agora é gerenciado pelo ThemeContext
 
@@ -168,6 +169,15 @@ function App() {
                   <MainLayout>
                     <Suspense fallback={<LoadingSkeleton />}>
                       <GanttPage />
+                    </Suspense>
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/metrics" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <Suspense fallback={<LoadingSkeleton />}>
+                      <MetricsDashboardPage />
                     </Suspense>
                   </MainLayout>
                 </ProtectedRoute>
