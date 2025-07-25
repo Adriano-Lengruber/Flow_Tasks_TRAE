@@ -12,6 +12,7 @@ import { ProjectsModule } from './projects/projects.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { CommentsModule } from './comments/comments.module';
 import { AutomationsModule } from './automations/automations.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { AutomationsModule } from './automations/automations.module';
     NotificationsModule,
     CommentsModule,
     AutomationsModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
