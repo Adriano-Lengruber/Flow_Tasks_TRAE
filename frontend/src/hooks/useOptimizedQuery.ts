@@ -1,8 +1,8 @@
-import { useQuery, QueryHookOptions, DocumentNode } from '@apollo/client';
+import { useQuery, QueryHookOptions, DocumentNode, OperationVariables } from '@apollo/client';
 import { useMemo } from 'react';
 
 // Hook personalizado para queries otimizadas com cache inteligente
-export function useOptimizedQuery<TData = any, TVariables = any>(
+export function useOptimizedQuery<TData = any, TVariables extends OperationVariables = OperationVariables>(
   query: DocumentNode,
   options?: QueryHookOptions<TData, TVariables>
 ) {
@@ -19,7 +19,7 @@ export function useOptimizedQuery<TData = any, TVariables = any>(
     notifyOnNetworkStatusChange: true,
   }), [options]);
 
-  const result = useQuery(query, optimizedOptions);
+  const result = useQuery<TData, TVariables>(query, optimizedOptions);
 
   // Adicionar informações de performance
   const performanceInfo = useMemo(() => ({
@@ -35,7 +35,7 @@ export function useOptimizedQuery<TData = any, TVariables = any>(
 }
 
 // Hook para queries paginadas otimizadas
-export function usePaginatedQuery<TData = any, TVariables = any>(
+export function usePaginatedQuery<TData = any, TVariables extends OperationVariables = OperationVariables>(
   query: DocumentNode,
   options?: QueryHookOptions<TData, TVariables> & {
     pageSize?: number;
@@ -59,9 +59,9 @@ export function usePaginatedQuery<TData = any, TVariables = any>(
     // Implementar lógica de prefetch baseada nos dados atuais
     return () => {
       // Prefetch da próxima página se houver mais dados
-      const hasMore = result.data?.hasMore;
+      const hasMore = (result.data as any)?.hasMore;
       if (hasMore) {
-        const currentOffset = result.data?.offset || 0;
+        const currentOffset = (result.data as any)?.offset || 0;
         result.fetchMore({
           variables: {
             ...queryOptions?.variables,
@@ -79,10 +79,10 @@ export function usePaginatedQuery<TData = any, TVariables = any>(
     ...result,
     prefetchNextPage,
     pageInfo: {
-      hasMore: result.data?.hasMore || false,
-      total: result.data?.total || 0,
-      currentPage: Math.floor((result.data?.offset || 0) / pageSize) + 1,
-      totalPages: Math.ceil((result.data?.total || 0) / pageSize),
+      hasMore: (result.data as any)?.hasMore || false,
+      total: (result.data as any)?.total || 0,
+      currentPage: Math.floor(((result.data as any)?.offset || 0) / pageSize) + 1,
+      totalPages: Math.ceil(((result.data as any)?.total || 0) / pageSize),
     },
   };
 }

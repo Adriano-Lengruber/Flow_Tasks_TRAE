@@ -117,7 +117,7 @@ interface Task {
   id: string;
   title: string;
   description?: string;
-  priority: 'LOW' | 'MEDIUM' | 'HIGH';
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
   dueDate?: string;
   completed: boolean;
   createdAt: string;
@@ -137,10 +137,16 @@ const TasksOptimized: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const [open, setOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string;
+    description: string;
+    priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+    dueDate: string;
+    sectionId: string;
+  }>({
     title: '',
     description: '',
-    priority: 'MEDIUM' as const,
+    priority: 'MEDIUM',
     dueDate: '',
     sectionId: '',
   });
@@ -149,7 +155,7 @@ const TasksOptimized: React.FC = () => {
   const [filterCompleted, setFilterCompleted] = useState<boolean | null>(null);
   const [filterPriority, setFilterPriority] = useState<string>('');
 
-  const { showToast, toastProps } = useToast();
+  const { showToast, toast, hideToast } = useToast();
 
   const [createTask, { loading: creating }] = useMutation(CREATE_TASK, {
     onCompleted: () => {
@@ -655,7 +661,7 @@ const TasksOptimized: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      <Toast {...toastProps} />
+      <Toast {...toast} onClose={hideToast} />
     </ResponsiveContainer>
   );
 };

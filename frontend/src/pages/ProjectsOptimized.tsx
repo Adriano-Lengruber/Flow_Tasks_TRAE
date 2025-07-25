@@ -81,7 +81,7 @@ const ProjectsOptimized: React.FC = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
 
-  const { showToast, toastProps } = useToast();
+  const { showToast, toast, hideToast } = useToast();
 
   const [createProject, { loading: creating }] = useMutation(CREATE_PROJECT, {
     onCompleted: () => {
@@ -412,7 +412,7 @@ const ProjectsOptimized: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      <Toast {...toastProps} />
+      <Toast {...toast} onClose={hideToast} />
     </ResponsiveContainer>
   );
 };

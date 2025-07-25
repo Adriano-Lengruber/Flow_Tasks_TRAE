@@ -15,9 +15,9 @@ interface PaginatedListProps<T> {
   variables?: Record<string, any>;
   pageSize?: number;
   renderItem: (item: T, index: number) => React.ReactNode;
-  renderEmpty?: () => React.ReactNode;
-  renderError?: (error: any) => React.ReactNode;
-  renderLoading?: () => React.ReactNode;
+  renderEmpty?: () => React.ReactElement;
+  renderError?: (error: any) => React.ReactElement;
+  renderLoading?: () => React.ReactElement;
   dataPath: string; // Caminho para os dados na resposta (ex: 'projectsPaginated')
   enableInfiniteScroll?: boolean;
   enablePrefetch?: boolean;
@@ -38,7 +38,7 @@ export function PaginatedList<T = any>({
   enablePrefetch = true,
   className,
   title,
-}: PaginatedListProps<T>) {
+}: PaginatedListProps<T>): JSX.Element {
   const [currentOffset, setCurrentOffset] = useState(0);
   const [allItems, setAllItems] = useState<T[]>([]);
 

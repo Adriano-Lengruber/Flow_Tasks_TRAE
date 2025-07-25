@@ -69,6 +69,11 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
   
+  // Ignorar URLs com esquemas não suportados
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    return;
+  }
+  
   // GraphQL requests - Network First com fallback para cache
   if (url.pathname === GRAPHQL_ENDPOINT) {
     event.respondWith(handleGraphQLRequest(request));

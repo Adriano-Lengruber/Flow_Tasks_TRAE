@@ -136,8 +136,8 @@ export const MetricsDashboard: React.FC<MetricsDashboardProps> = ({
   
   // Métricas Web Vitals
   const webVitalsData = useMemo(() => {
-    return webVitals.getMetrics();
-  }, [lastUpdate]);
+    return webVitals.getMetrics ? webVitals.getMetrics() : {};
+  }, [lastUpdate, webVitals]);
   
   // Determinar cor baseada no valor
   const getMetricColor = (value: number, thresholds: { good: number; needs_improvement: number }) => {
@@ -192,36 +192,36 @@ export const MetricsDashboard: React.FC<MetricsDashboardProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
               <MetricCard
                 title="LCP"
-                value={webVitalsData.lcp?.toFixed(0) || 'N/A'}
+                value={(webVitalsData as any).lcp?.toFixed(0) || 'N/A'}
                 unit="ms"
-                color={webVitalsData.lcp ? getMetricColor(webVitalsData.lcp, { good: 2500, needs_improvement: 4000 }) : 'blue'}
+                color={(webVitalsData as any).lcp ? getMetricColor((webVitalsData as any).lcp, { good: 2500, needs_improvement: 4000 }) : 'blue'}
                 description="Largest Contentful Paint"
               />
               <MetricCard
                 title="FID"
-                value={webVitalsData.fid?.toFixed(0) || 'N/A'}
+                value={(webVitalsData as any).fid?.toFixed(0) || 'N/A'}
                 unit="ms"
-                color={webVitalsData.fid ? getMetricColor(webVitalsData.fid, { good: 100, needs_improvement: 300 }) : 'blue'}
+                color={(webVitalsData as any).fid ? getMetricColor((webVitalsData as any).fid, { good: 100, needs_improvement: 300 }) : 'blue'}
                 description="First Input Delay"
               />
               <MetricCard
                 title="CLS"
-                value={webVitalsData.cls?.toFixed(3) || 'N/A'}
-                color={webVitalsData.cls ? getMetricColor(webVitalsData.cls, { good: 0.1, needs_improvement: 0.25 }) : 'blue'}
+                value={(webVitalsData as any).cls?.toFixed(3) || 'N/A'}
+                color={(webVitalsData as any).cls ? getMetricColor((webVitalsData as any).cls, { good: 0.1, needs_improvement: 0.25 }) : 'blue'}
                 description="Cumulative Layout Shift"
               />
               <MetricCard
                 title="FCP"
-                value={webVitalsData.fcp?.toFixed(0) || 'N/A'}
+                value={(webVitalsData as any).fcp?.toFixed(0) || 'N/A'}
                 unit="ms"
-                color={webVitalsData.fcp ? getMetricColor(webVitalsData.fcp, { good: 1800, needs_improvement: 3000 }) : 'blue'}
+                color={(webVitalsData as any).fcp ? getMetricColor((webVitalsData as any).fcp, { good: 1800, needs_improvement: 3000 }) : 'blue'}
                 description="First Contentful Paint"
               />
               <MetricCard
                 title="TTFB"
-                value={webVitalsData.ttfb?.toFixed(0) || 'N/A'}
+                value={(webVitalsData as any).ttfb?.toFixed(0) || 'N/A'}
                 unit="ms"
-                color={webVitalsData.ttfb ? getMetricColor(webVitalsData.ttfb, { good: 800, needs_improvement: 1800 }) : 'blue'}
+                color={(webVitalsData as any).ttfb ? getMetricColor((webVitalsData as any).ttfb, { good: 800, needs_improvement: 1800 }) : 'blue'}
                 description="Time to First Byte"
               />
             </div>
