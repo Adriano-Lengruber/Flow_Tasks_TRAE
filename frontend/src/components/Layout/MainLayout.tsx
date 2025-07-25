@@ -27,6 +27,7 @@ import {
   SmartToy as AutomationIcon,
   Timeline as TimelineIcon,
   AdminPanelSettings as AdminIcon,
+  Analytics as AnalyticsIcon,
 } from '@mui/icons-material';
 import { NotificationsList } from '../Notifications/NotificationsList';
 import ThemeToggle from '../common/ThemeToggle';
@@ -58,6 +59,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     { text: 'Tarefas', icon: <TaskIcon />, path: '/tasks' },
     { text: 'Gantt', icon: <TimelineIcon />, path: '/gantt' },
     { text: 'Automações', icon: <AutomationIcon />, path: '/automations' },
+    { text: 'Métricas', icon: <AnalyticsIcon />, path: '/metrics' },
     { text: 'Equipe', icon: <PeopleIcon />, path: '/team' },
     { text: 'Preferências de Notificação', icon: <NotificationsIcon />, path: '/notification-preferences' },
     { text: 'Admin Dashboard', icon: <AdminIcon />, path: '/admin' },

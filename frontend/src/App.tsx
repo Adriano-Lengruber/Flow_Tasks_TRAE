@@ -25,6 +25,7 @@ const NotificationPreferencesPage = React.lazy(() => import('./pages/Notificatio
 const Automations = React.lazy(() => import('./pages/Automations'));
 const GanttPage = React.lazy(() => import('./pages/Gantt'));
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
+const MetricsDashboardPage = React.lazy(() => import('./pages/MetricsDashboardPage'));
 
 // O tema agora é gerenciado pelo ThemeContext
 
@@ -178,6 +179,15 @@ function App() {
                   <MainLayout>
                     <Suspense fallback={<LoadingSkeleton />}>
                       <AdminDashboard />
+                    </Suspense>
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/metrics" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <Suspense fallback={<LoadingSkeleton />}>
+                      <MetricsDashboardPage />
                     </Suspense>
                   </MainLayout>
                 </ProtectedRoute>

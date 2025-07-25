@@ -1,0 +1,377 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// Modelo de usuário
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  firstName String?
+  lastName  String?
+  password  String
+  avatar    String?
+  isActive  Boolean  @default(true)
+  role      String   @default("USER")
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastLogin DateTime?
+  
+  // Relacionamentos
+  projects        ProjectMember[]
+  tasks           Task[]
+  comments        Comment[]
+  notifications   Notification[]
+  auditLogs       AuditLog[]
+  integrations    Integration[]
+  reports         Report[]
+  workflows       Workflow[]
+  
+  @@map("users")
+}
+
+// Roles de usuário (como string): ADMIN, MANAGER, USER, GUEST
+
+// Modelo de projeto
+model Project {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  status      String        @default("ACTIVE")
+  startDate   DateTime?
+  endDate     DateTime?
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relacionamentos
+  members ProjectMember[]
+  tasks   Task[]
+  
+  @@map("projects")
+}
+
+// Status do projeto (como string): ACTIVE, INACTIVE, COMPLETED, ARCHIVED
+
+// Modelo de membro do projeto
+model ProjectMember {
+  id        String            @id @default(cuid())
+  userId    String
+  projectId String
+  role String            @default("MEMBER")
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relacionamentos
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, projectId])
+  @@map("project_members")
+}
+
+// Roles no projeto (como string): OWNER, ADMIN, MEMBER, VIEWER
+
+// Modelo de tarefa
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  status      String     @default("TODO")
+  priority    String     @default("MEDIUM")
+  dueDate     DateTime?
+  
+  // Relacionamentos
+  assigneeId String?
+  projectId  String
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relacionamentos
+  assignee User?     @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
+  project  Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  comments Comment[]
+  
+  @@map("tasks")
+}
+
+// Status da tarefa (como string): TODO, IN_PROGRESS, IN_REVIEW, DONE, CANCELLED
+// Prioridade (como string): LOW, MEDIUM, HIGH, URGENT
+
+// Modelo de comentário
+model Comment {
+  id      String @id @default(cuid())
+  content String
+  
+  // Relacionamentos
+  authorId String
+  taskId   String
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relacionamentos
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  
+  @@map("comments")
+}
+
+// Modelo de notificação
+model Notification {
+  id      String           @id @default(cuid())
+  title   String
+  message String
+  type     String @default("INFO")
+  isRead  Boolean          @default(false)
+  
+  // Relacionamentos
+  userId String
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relacionamentos
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("notifications")
+}
+
+// Tipo de notificação (como string): INFO, SUCCESS, WARNING, ERROR, TASK_ASSIGNED, TASK_COMPLETED, PROJECT_UPDATED, COMMENT_ADDED
+
+// Modelo de log de auditoria
+model AuditLog {
+  id         String          @id @default(cuid())
+  action     String
+  entity     String
+  entityId   String?
+  oldValues  String?
+  newValues  String?
+  ipAddress  String?
+  userAgent  String?
+  category   String          @default("OTHER")
+  severity   String          @default("INFO")
+  
+  // Relacionamentos
+  userId String?
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  
+  // Relacionamentos
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  @@map("audit_logs")
+}
+
+// Categoria de auditoria (como string): AUTH, USER, PROJECT, TASK, COMMENT, SYSTEM, SECURITY, OTHER
+// Severidade de auditoria (como string): LOW, INFO, WARN, HIGH, CRITICAL
+
+// Modelo de integração
+model Integration {
+  id           String            @id @default(cuid())
+  name         String
+  type         String
+  status       String            @default("INACTIVE")
+  config       String
+  credentials  String
+  lastSyncAt   DateTime?
+  
+  // Relacionamentos
+  userId String
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relacionamentos
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("integrations")
+}
+
+// Tipo de integração (como string): GITHUB, SLACK, EMAIL, WEBHOOK, JIRA, TRELLO, DISCORD
+// Status de integração (como string): ACTIVE, INACTIVE, ERROR, PENDING
+
+// Modelo de relatório
+model Report {
+  id          String       @id @default(cuid())
+  name        String
+  description String?
+  type        String
+  config      String
+  schedule    String?
+  lastRunAt   DateTime?
+  
+  // Relacionamentos
+  createdById String
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relacionamentos
+  createdBy   User               @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  generations ReportGeneration[]
+  
+  @@map("reports")
+}
+
+// Tipo de relatório (como string): TASK_SUMMARY, PROJECT_PROGRESS, USER_ACTIVITY, PERFORMANCE, CUSTOM
+
+// Modelo de geração de relatório
+model ReportGeneration {
+  id       String              @id @default(cuid())
+  status   String                 @default("PENDING")
+  format   String                 @default("PDF")
+  filePath String?
+  error    String?
+  
+  // Relacionamentos
+  reportId String
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relacionamentos
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  
+  @@map("report_generations")
+}
+
+// Status de geração de relatório (como string): PENDING, RUNNING, COMPLETED, FAILED
+// Formato de relatório (como string): PDF, HTML, CSV, XLSX, JSON
+
+// Modelo de workflow
+model Workflow {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean       @default(false)
+  config      String
+  triggers    String
+  steps       String
+  variables   String?
+  
+  // Relacionamentos
+  createdById String
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relacionamentos
+  createdBy  User                @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  executions WorkflowExecution[]
+  
+  @@map("workflows")
+}
+
+// Modelo de execução de workflow
+model WorkflowExecution {
+  id         String                  @id @default(cuid())
+  status     String                  @default("PENDING")
+  trigger    String
+  context    String?
+  result     String?
+  error      String?
+  startedAt  DateTime?
+  finishedAt DateTime?
+  
+  // Relacionamentos
+  workflowId String
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relacionamentos
+  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  
+  @@map("workflow_executions")
+}
+
+// Status de execução de workflow (como string): PENDING, RUNNING, COMPLETED, FAILED, CANCELLED
+
+// Modelo de backup
+model Backup {
+  id          String       @id @default(cuid())
+  filename    String
+  path        String
+  size        BigInt
+  checksum    String
+  type        String       @default("FULL")
+  status      String       @default("PENDING")
+  compressed  Boolean      @default(false)
+  encrypted   Boolean      @default(false)
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("backups")
+}
+
+// Tipo de backup (como string): FULL, INCREMENTAL, DIFFERENTIAL
+// Status de backup (como string): PENDING, RUNNING, COMPLETED, FAILED
+
+// Modelo de configuração do sistema
+model SystemConfig {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("system_config")
+}
+
+// Modelo de sessão
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("sessions")
+}
+
+// Índices para performance
+// @@index([email], map: "idx_users_email")
+// @@index([username], map: "idx_users_username")
+// @@index([createdAt], map: "idx_users_created_at")
+// @@index([projectId], map: "idx_tasks_project_id")
+// @@index([assigneeId], map: "idx_tasks_assignee_id")
+// @@index([status], map: "idx_tasks_status")
+// @@index([dueDate], map: "idx_tasks_due_date")
+// @@index([userId], map: "idx_notifications_user_id")
+// @@index([isRead], map: "idx_notifications_is_read")
+// @@index([createdAt], map: "idx_audit_logs_created_at")
+// @@index([userId], map: "idx_audit_logs_user_id")
+// @@index([entity, entityId], map: "idx_audit_logs_entity")
