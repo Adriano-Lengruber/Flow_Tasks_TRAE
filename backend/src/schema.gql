@@ -12,6 +12,20 @@ enum ActionType {
   UPDATE_TASK_PRIORITY
 }
 
+enum AnalyticsEventType {
+  DUPLICATE
+  EXPORT
+  SCHEDULE
+  SHARE
+  VIEW
+}
+
+enum AnalyticsExportFormat {
+  CSV
+  EXCEL
+  PDF
+}
+
 type AuthPayload {
   accessToken: String!
   user: User!
@@ -45,6 +59,17 @@ type AutomationLog {
   status: ExecutionStatus!
   triggerData: String
   triggeredBy: User
+}
+
+type BuilderField {
+  aggregations: [String!]
+  description: String
+  formats: [String!]
+  id: String!
+  label: String!
+  name: String!
+  source: String!
+  type: String!
 }
 
 type Comment {
@@ -95,10 +120,30 @@ input CreateTaskInput {
   title: String!
 }
 
+input CreateTemplateInput {
+  category: TemplateCategory!
+  description: String!
+  fields: [TemplateFieldInput!]!
+  filters: [TemplateFilterInput!]
+  isPublic: Boolean
+  name: String!
+  tags: [String!]
+  visualization: VisualizationConfigInput!
+}
+
 input CreateUserInput {
   email: String!
   name: String
   password: String!
+}
+
+type DataSource {
+  description: String
+  fields: [BuilderField!]!
+  id: String!
+  name: String!
+  schema: String
+  type: String!
 }
 
 """
@@ -111,6 +156,22 @@ enum ExecutionStatus {
   FAILED
   SKIPPED
   SUCCESS
+}
+
+enum ExportFormat {
+  CSV
+  EXCEL
+  PDF
+}
+
+"""Tipos de agregação para campos"""
+enum FieldAggregation {
+  AVG
+  COUNT
+  DISTINCT
+  MAX
+  MIN
+  SUM
 }
 
 input LoginInput {
@@ -126,11 +187,15 @@ input MoveTaskInput {
 
 type Mutation {
   clearAllNotifications: Boolean!
+  cloneReportTemplate(id: ID!, newName: String): ReportTemplate!
   createAutomation(createAutomationInput: CreateAutomationDto!): Automation!
   createComment(createCommentInput: CreateCommentInput!): Comment!
   createProject(createProjectInput: CreateProjectInput!): Project!
+  createReportTemplate(input: CreateTemplateInput!): ReportTemplate!
   createSection(createSectionInput: CreateSectionInput!): Section!
   createTask(createTaskInput: CreateTaskInput!): Task!
+  deleteReportTemplate(id: ID!): Boolean!
+  generateReportFromTemplate(templateId: ID!): Report!
   login(loginInput: LoginInput!): AuthPayload!
   markAllNotificationsAsRead: Boolean!
   markNotificationAsRead(notificationId: String!): Boolean!
@@ -147,6 +212,7 @@ type Mutation {
   updateComment(updateCommentInput: UpdateCommentInput!): Comment!
   updateNotificationPreferences(updateNotificationPreferencesInput: UpdateNotificationPreferencesInput!): NotificationPreferences!
   updateProject(updateProjectInput: UpdateProjectInput!): Project!
+  updateReportTemplate(input: UpdateTemplateInput!): ReportTemplate!
   updateSection(updateSectionInput: UpdateSectionInput!): Section!
   updateTask(updateTaskInput: UpdateTaskInput!): Task!
 }
@@ -228,18 +294,24 @@ type Query {
   automation(id: String!): Automation!
   automationLogs(automationId: String!): [AutomationLog!]!
   automations(projectId: String): [Automation!]!
+  availableDataSources: [DataSource!]!
   comment(id: ID!): Comment!
   comments(taskId: ID!): [Comment!]!
   me: User!
   notificationPreferences: NotificationPreferences!
   notifications(limit: Float! = 50, offset: Float! = 0): [Notification!]!
+  popularTemplates(limit: Float! = 10): [ReportTemplate!]!
+  prebuiltTemplates: [ReportTemplate!]!
   project(id: ID!): Project!
   projects: [Project!]!
   projectsPaginated(pagination: PaginationInput): PaginatedProjects!
   recentActivities(limit: Float! = 10): [RecentActivity!]!
+  reportTemplate(id: ID!): ReportTemplate!
+  reportTemplates(filters: TemplateSearchInput): [ReportTemplate!]!
   section(id: ID!): Section!
   task(id: ID!): Task!
   tasksPaginated(pagination: PaginationInput, projectId: ID!): PaginatedTasks!
+  templateUsageStats(templateId: ID!): TemplateUsageStats!
   unreadNotificationsCount: Float!
 }
 
@@ -252,6 +324,90 @@ type RecentActivity {
   title: String!
   type: String!
   user: User!
+}
+
+type Report {
+  analytics: [ReportAnalytics!]
+  category: String
+  createdAt: DateTime!
+  createdBy: User!
+  description: String!
+  fields: String!
+  filters: String
+  groupBy: String
+  id: ID!
+  isActive: Boolean!
+  isPublic: Boolean!
+  metadata: String
+  name: String!
+  schedules: [ReportSchedule!]
+  sortBy: String
+  sortOrder: String!
+  template: ReportTemplateType!
+  updatedAt: DateTime!
+}
+
+type ReportAnalytics {
+  createdAt: DateTime!
+  eventType: AnalyticsEventType!
+  executionTime: Float
+  exportFormat: AnalyticsExportFormat
+  filters: String
+  id: ID!
+  metadata: String
+  recordCount: Float
+  report: Report!
+  reportId: String!
+  updatedAt: DateTime!
+  user: User!
+  userId: String!
+}
+
+type ReportSchedule {
+  cronExpression: String!
+  enabled: Boolean!
+  format: ExportFormat!
+  id: ID!
+  name: String!
+  recipients: [String!]!
+  status: ScheduleStatus!
+}
+
+type ReportTemplate {
+  category: TemplateCategory!
+  createdAt: DateTime!
+  createdBy: User!
+  description: String!
+  fields: String!
+  filters: String
+  id: ID!
+  isActive: Boolean!
+  isPremium: Boolean!
+  isPublic: Boolean!
+  layout: String
+  metadata: String
+  name: String!
+  rating: Float!
+  sampleData: String
+  tags: [String!]
+  thumbnail: String
+  updatedAt: DateTime!
+  usageCount: Float!
+  visualization: String!
+}
+
+enum ReportTemplateType {
+  CHART
+  DASHBOARD
+  SUMMARY
+  TABLE
+}
+
+enum ScheduleStatus {
+  ACTIVE
+  COMPLETED
+  ERROR
+  PAUSED
 }
 
 type Section {
@@ -284,6 +440,53 @@ enum TaskPriority {
   LOW
   MEDIUM
   URGENT
+}
+
+"""Categorias de templates de relatórios"""
+enum TemplateCategory {
+  ANALYTICS
+  CUSTOM
+  FINANCIAL
+  OPERATIONAL
+  SALES
+}
+
+input TemplateFieldInput {
+  aggregation: FieldAggregation
+  defaultValue: String
+  format: String
+  id: String!
+  label: String!
+  name: String!
+  required: Boolean
+  source: String!
+  type: String!
+}
+
+input TemplateFilterInput {
+  fieldId: String!
+  id: String!
+  label: String!
+  operator: String!
+  required: Boolean
+  value: String!
+}
+
+input TemplateSearchInput {
+  category: TemplateCategory
+  isPublic: Boolean
+  search: String
+  tags: [String!]
+}
+
+type TemplateUsageStats {
+  createdAt: DateTime!
+  lastUsed: DateTime!
+  name: String!
+  rating: Float!
+  reportsCreated: Float!
+  templateId: String!
+  usageCount: Float!
 }
 
 """Tipos de gatilhos disponíveis para automações"""
@@ -352,6 +555,18 @@ input UpdateTaskInput {
   title: String
 }
 
+input UpdateTemplateInput {
+  category: TemplateCategory
+  description: String
+  fields: [TemplateFieldInput!]
+  filters: [TemplateFilterInput!]
+  id: ID!
+  isPublic: Boolean
+  name: String
+  tags: [String!]
+  visualization: VisualizationConfigInput
+}
+
 type User {
   createdAt: DateTime!
   email: String!
@@ -360,4 +575,33 @@ type User {
   notificationPreferences: NotificationPreferences
   projects: [Project!]
   updatedAt: DateTime!
+}
+
+input VisualizationConfigInput {
+  animation: Boolean
+  colors: [String!]
+  dataLabels: Boolean
+  groupBy: String
+  height: Float
+  responsive: Boolean
+  showGrid: Boolean
+  showLegend: Boolean
+  subtitle: String
+  title: String
+  type: VisualizationType!
+  width: Float
+  xAxis: String
+  yAxis: String
+}
+
+"""Tipos de visualização disponíveis"""
+enum VisualizationType {
+  AREA
+  BAR_CHART
+  HEATMAP
+  LINE_CHART
+  METRIC
+  PIE_CHART
+  SCATTER
+  TABLE
 }

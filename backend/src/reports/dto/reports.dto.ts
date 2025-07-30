@@ -2,7 +2,7 @@ import { IsString, IsArray, IsOptional, IsEnum, IsBoolean, IsObject, ValidateNes
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
-export enum ReportTemplate {
+export enum ReportTemplateType {
   TABLE = 'table',
   CHART = 'chart',
   DASHBOARD = 'dashboard',
@@ -102,9 +102,9 @@ export class CreateReportDto {
   @IsEnum(['asc', 'desc'])
   sortOrder: 'asc' | 'desc';
 
-  @ApiProperty({ description: 'Template do relatório', enum: ReportTemplate })
-  @IsEnum(ReportTemplate)
-  template: ReportTemplate;
+  @ApiProperty({ description: 'Template do relatório', enum: ReportTemplateType })
+  @IsEnum(ReportTemplateType)
+  template: ReportTemplateType;
 }
 
 export class UpdateReportDto {
@@ -147,10 +147,10 @@ export class UpdateReportDto {
   @IsEnum(['asc', 'desc'])
   sortOrder?: 'asc' | 'desc';
 
-  @ApiProperty({ description: 'Template do relatório', enum: ReportTemplate, required: false })
+  @ApiProperty({ description: 'Template do relatório', enum: ReportTemplateType, required: false })
   @IsOptional()
-  @IsEnum(ReportTemplate)
-  template?: ReportTemplate;
+  @IsEnum(ReportTemplateType)
+  template?: ReportTemplateType;
 }
 
 export class GenerateReportDto {

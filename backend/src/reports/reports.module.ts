@@ -8,11 +8,14 @@ import { ReportsService } from './reports.service';
 import { Report } from './entities/report.entity';
 import { ReportSchedule } from './entities/report-schedule.entity';
 import { ReportAnalytics } from './entities/report-analytics.entity';
+import { ReportTemplate } from './entities/report-template.entity';
 import { ReportSchedulerService } from './services/report-scheduler.service';
 import { ReportExportService } from './services/report-export.service';
 import { ReportAnalyticsService } from './services/report-analytics.service';
 import { ReportTemplateService } from './services/report-template.service';
 import { ReportQueryBuilderService } from './services/report-query-builder.service';
+import { ReportBuilderService } from './services/report-builder.service';
+import { ReportBuilderResolver } from './resolvers/report-builder.resolver';
 import { ReportProcessor } from './processors/report.processor';
 import { EmailModule } from '../email/email.module';
 import { UsersModule } from '../users/users.module';
@@ -27,6 +30,7 @@ import { memoryStorage } from 'multer';
       Report,
       ReportSchedule,
       ReportAnalytics,
+      ReportTemplate,
     ]),
     
     // Schedule module for cron jobs
@@ -83,12 +87,16 @@ import { memoryStorage } from 'multer';
     // Main service
     ReportsService,
     
+    // GraphQL resolvers
+    ReportBuilderResolver,
+    
     // Specialized services
     ReportSchedulerService,
     ReportExportService,
     ReportAnalyticsService,
     ReportTemplateService,
     ReportQueryBuilderService,
+    ReportBuilderService,
     
     // Queue processors
     ReportProcessor,
@@ -98,6 +106,7 @@ import { memoryStorage } from 'multer';
     ReportsService,
     ReportAnalyticsService,
     ReportExportService,
+    ReportBuilderService,
     TypeOrmModule,
   ],
 })

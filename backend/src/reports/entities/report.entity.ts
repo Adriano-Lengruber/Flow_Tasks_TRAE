@@ -1,9 +1,10 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import { ObjectType, Field, ID, registerEnumType } from '@nestjs/graphql';
 import { User } from '../../auth/entities/user.entity';
 import { ReportSchedule } from './report-schedule.entity';
 import { ReportAnalytics } from './report-analytics.entity';
 
-export enum ReportTemplate {
+export enum ReportTemplateType {
   TABLE = 'table',
   CHART = 'chart',
   DASHBOARD = 'dashboard',
@@ -28,6 +29,19 @@ export enum FilterOperator {
   IN = 'in',
 }
 
+// Register enums for GraphQL
+registerEnumType(ReportTemplateType, {
+  name: 'ReportTemplateType',
+});
+
+registerEnumType(FieldType, {
+  name: 'FieldType',
+});
+
+registerEnumType(FilterOperator, {
+  name: 'FilterOperator',
+});
+
 export interface ReportField {
   id: string;
   name: string;
@@ -43,47 +57,62 @@ export interface ReportFilter {
   value: any;
 }
 
+@ObjectType()
 @Entity('reports')
 export class Report {
+  @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Field()
   @Column({ type: 'varchar', length: 255 })
   name: string;
 
+  @Field()
   @Column({ type: 'text' })
   description: string;
 
+  @Field(() => String)
   @Column({ type: 'json' })
   fields: ReportField[];
 
+  @Field(() => String, { nullable: true })
   @Column({ type: 'json', nullable: true })
   filters: ReportFilter[];
 
+  @Field({ nullable: true })
   @Column({ type: 'varchar', nullable: true })
   groupBy: string;
 
+  @Field({ nullable: true })
   @Column({ type: 'varchar', nullable: true })
   sortBy: string;
 
+  @Field()
   @Column({ type: 'varchar', length: 10, default: 'asc' })
   sortOrder: 'asc' | 'desc';
 
-  @Column({ type: 'varchar', length: 20, default: ReportTemplate.TABLE })
-  template: ReportTemplate;
+  @Field(() => ReportTemplateType)
+  @Column({ type: 'varchar', length: 20, default: ReportTemplateType.TABLE })
+  template: ReportTemplateType;
 
+  @Field()
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
+  @Field()
   @Column({ type: 'boolean', default: false })
   isPublic: boolean;
 
+  @Field({ nullable: true })
   @Column({ type: 'varchar', nullable: true })
   category: string;
 
+  @Field(() => String, { nullable: true })
   @Column({ type: 'json', nullable: true })
   metadata: any;
 
+  @Field(() => User)
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'created_by' })
   createdBy: User;
@@ -91,15 +120,19 @@ export class Report {
   @Column({ name: 'created_by' })
   createdById: string;
 
+  @Field(() => [ReportSchedule], { nullable: true })
   @OneToMany(() => ReportSchedule, schedule => schedule.report)
   schedules: ReportSchedule[];
 
+  @Field(() => [ReportAnalytics], { nullable: true })
   @OneToMany(() => ReportAnalytics, analytics => analytics.report)
   analytics: ReportAnalytics[];
 
+  @Field()
   @CreateDateColumn()
   createdAt: Date;
 
+  @Field()
   @UpdateDateColumn()
   updatedAt: Date;
 

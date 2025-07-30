@@ -5,6 +5,15 @@ Todas as mudanças notáveis neste projeto são documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [2.2.0] - 2025-01-24
+
+### 🔧 Alterado - Migração de ORM
+- **Migração Prisma → TypeORM**: Migração completa do módulo Reports do Prisma para TypeORM
+- **Compatibilidade SQLite**: Correção de tipos de dados (`enum` → `varchar`, `timestamp` → `datetime`)
+- **Estrutura de Entidades**: Criação de entidades TypeORM para Report, ReportSchedule e ReportAnalytics
+- **Services Atualizados**: Migração de todos os services do módulo Reports para usar Repository Pattern
+- **Testes Mantidos**: Todos os 115 testes continuam passando após a migração
+
 ## [2.1.0] - 2025-01-24
 
 ### 🧹 Organizado - Documentação

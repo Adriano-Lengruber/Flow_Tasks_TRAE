@@ -28,6 +28,7 @@ const Automations = React.lazy(() => import('./pages/Automations'));
 const GanttPage = React.lazy(() => import('./pages/Gantt'));
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
 const MetricsDashboardPage = React.lazy(() => import('./pages/MetricsDashboardPage'));
+const ReportBuilderPage = React.lazy(() => import('./pages/ReportBuilderPage'));
 
 // O tema agora é gerenciado pelo ThemeContext
 
@@ -116,7 +117,12 @@ const AppContent: React.FC = () => {
   }, [showToast]);
 
   return (
-    <Router>
+    <Router
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -209,6 +215,15 @@ const AppContent: React.FC = () => {
             <MainLayout>
               <Suspense fallback={<LoadingSkeleton />}>
                 <MetricsDashboardPage />
+              </Suspense>
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/reports/builder" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <Suspense fallback={<LoadingSkeleton />}>
+                <ReportBuilderPage />
               </Suspense>
             </MainLayout>
           </ProtectedRoute>

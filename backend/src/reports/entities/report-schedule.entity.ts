@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { ObjectType, Field, ID, registerEnumType } from '@nestjs/graphql';
 import { Report } from './report.entity';
 import { User } from '../../auth/entities/user.entity';
 
@@ -15,26 +16,43 @@ export enum ExportFormat {
   CSV = 'csv',
 }
 
+// Register enums for GraphQL
+registerEnumType(ScheduleStatus, {
+  name: 'ScheduleStatus',
+});
+
+registerEnumType(ExportFormat, {
+  name: 'ExportFormat',
+});
+
+@ObjectType()
 @Entity('report_schedules')
 export class ReportSchedule {
+  @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Field()
   @Column({ type: 'varchar', length: 255 })
   name: string;
 
+  @Field()
   @Column({ type: 'varchar', length: 100 })
   cronExpression: string;
 
+  @Field(() => [String])
   @Column({ type: 'json' })
   recipients: string[];
 
+  @Field(() => ExportFormat)
   @Column({ type: 'varchar', length: 20, default: ExportFormat.PDF })
   format: ExportFormat;
 
+  @Field(() => ScheduleStatus)
   @Column({ type: 'varchar', length: 20, default: ScheduleStatus.ACTIVE })
   status: ScheduleStatus;
 
+  @Field()
   @Column({ type: 'boolean', default: true })
   enabled: boolean;
 

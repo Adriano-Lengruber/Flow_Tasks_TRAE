@@ -16,7 +16,7 @@ Este documento descreve a estrutura de testes automatizados implementada no back
 
 2. **Testes de Integração** (`test/*.integration.spec.ts`)
    - Testam a integração entre componentes
-   - Usam banco de dados real (SQLite em memória)
+   - Usam banco de dados real (SQLite em memória com TypeORM)
    - Testam fluxos completos da API
 
 3. **Testes de Performance** (`test/*.performance.spec.ts`)
@@ -98,6 +98,7 @@ npm run test:debug
 - `NODE_ENV=test`
 - `JWT_SECRET=test-jwt-secret`
 - `DATABASE_URL=:memory:` (SQLite em memória)
+- TypeORM configurado para SQLite em memória nos testes
 
 ## Cobertura de Testes
 

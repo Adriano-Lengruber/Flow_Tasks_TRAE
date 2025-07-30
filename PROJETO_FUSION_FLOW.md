@@ -14,8 +14,8 @@
 | Componente | Tecnologia Principal | Detalhes |
 |------------|---------------------|----------|
 | **Frontend** | React 18 & React Native 0.72 | TypeScript, Redux Toolkit |
-| **Backend** | Node.js 20 & NestJS | GraphQL (Apollo Server) |
-| **Banco de Dados** | PostgreSQL & MongoDB | PostgreSQL para dados relacionais, MongoDB para conteúdo dinâmico |
+| **Backend** | Node.js 20 & NestJS | GraphQL (Apollo Server), TypeORM |
+| **Banco de Dados** | SQLite & PostgreSQL | SQLite para desenvolvimento, PostgreSQL para produção |
 | **Infraestrutura** | Docker & Kubernetes | Deploy na AWS (ECS), Redis para cache |
 
 ## 🚀 Status Atual - Janeiro 2025
@@ -26,6 +26,7 @@
 - **115 Testes** (101 unitários + 14 integração) - 100% passando
 - **Responsividade Mobile** completa
 - **CI/CD Pipeline** com quality gates
+- **Migração Prisma → TypeORM** concluída com sucesso
 - **Documentação Técnica** abrangente
 
 ### 📊 Métricas de Performance Alcançadas
@@ -166,6 +167,7 @@
 **Prioridade**: 🔥 ALTA | **Estimativa**: 6-8 semanas
 
 #### 1.1 Sistema de Relatórios Avançados (3-4 semanas)
+- [x] **Base de Relatórios** - Migração para TypeORM concluída
 - [ ] **Relatórios Customizáveis**
   - Builder de relatórios drag-and-drop
   - Templates pré-definidos por setor

@@ -11,7 +11,7 @@ import {
   Dashboard as DashboardIcon,
   Assignment as ProjectsIcon,
   Timeline as GanttIcon,
-  Settings as AutomationsIcon,
+  Assessment as ReportsIcon,
   Notifications as NotificationsIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -45,9 +45,9 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ visible }) => {
       icon: <GanttIcon />,
     },
     {
-      label: 'Automações',
-      value: '/automations',
-      icon: <AutomationsIcon />,
+      label: 'Relatórios',
+      value: '/reports/builder',
+      icon: <ReportsIcon />,
     },
     {
       label: 'Notificações',
@@ -72,7 +72,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ visible }) => {
     // Verificar correspondências parciais para rotas aninhadas
     if (currentPath.startsWith('/projects/')) return '/projects';
     if (currentPath.startsWith('/gantt')) return '/gantt';
-    if (currentPath.startsWith('/automations')) return '/automations';
+    if (currentPath.startsWith('/reports/')) return '/reports/builder';
     if (currentPath.startsWith('/notifications')) return '/notifications';
     
     return '/';

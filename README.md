@@ -24,8 +24,8 @@ Plataforma de gestão de projetos unificada que combina a simplicidade do Trello
 | Componente      | Tecnologia Principal        | Detalhes                               |
 |-----------------|-----------------------------|----------------------------------------|
 | **Frontend**    | React 18 & React Native 0.72| TypeScript, Redux Toolkit              |
-| **Backend**     | Node.js 20 & NestJS         | GraphQL (Apollo Server)                |
-| **Banco de Dados**| PostgreSQL & MongoDB        | PostgreSQL para dados relacionais, MongoDB para conteúdo dinâmico |
+| **Backend**     | Node.js 20 & NestJS         | GraphQL (Apollo Server), TypeORM       |
+| **Banco de Dados**| SQLite & PostgreSQL         | SQLite para desenvolvimento, PostgreSQL para produção |
 | **Infraestrutura**| Docker & Kubernetes         | Deploy na AWS (ECS), Redis para cache  |
 
 ## Estrutura do Projeto
@@ -100,7 +100,7 @@ Isso iniciará tanto o backend quanto o frontend em modo de desenvolvimento.
 ### 🏗️ Arquitetura
 - **Frontend**: React 18 + TypeScript + Apollo Client
 - **Backend**: NestJS + GraphQL + TypeORM
-- **Banco**: PostgreSQL com Redis para cache
+- **Banco**: SQLite (dev) / PostgreSQL (prod) com Redis para cache
 - **Infraestrutura**: Docker + Docker Compose
 
 ### 📁 Estrutura do Projeto

@@ -51,7 +51,7 @@ import { ReportsModule } from './reports/reports.module';
             type: 'better-sqlite3',
             database: configService.get('DB_NAME') || 'database.sqlite',
             entities: [__dirname + '/**/*.entity{.ts,.js}'],
-            synchronize: true, // Não usar em produção
+            synchronize: false, // Desabilitado temporariamente para evitar conflitos
           };
         }
       },

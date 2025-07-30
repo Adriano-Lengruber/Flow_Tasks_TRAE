@@ -26,6 +26,17 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+### 🔄 Migração de ORM
+
+**Importante**: Este projeto migrou do **Prisma** para **TypeORM** em Janeiro 2025.
+
+- **Antes**: Prisma Client com PostgreSQL/MongoDB
+- **Agora**: TypeORM com SQLite (desenvolvimento) e PostgreSQL (produção)
+- **Entidades**: Localizadas em `src/*/entities/*.entity.ts`
+- **Configuração**: TypeORM configurado em `src/app.module.ts`
+
+O arquivo `prisma/schema.prisma` ainda existe para referência histórica, mas não é mais utilizado.
+
 ## Project setup
 
 ```bash

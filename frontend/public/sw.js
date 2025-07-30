@@ -99,9 +99,31 @@ async function handleGraphQLRequest(request) {
     const networkResponse = await fetch(request.clone());
     
     if (networkResponse.ok) {
-      // Cachear apenas queries GET (não mutations)
-      if (request.method === 'GET' || isQueryRequest(request)) {
+      // Cachear apenas queries GET (não mutations POST)
+      if (request.method === 'GET') {
         cache.put(request, networkResponse.clone());
+      } else if (request.method === 'POST') {
+        // Para requisições POST, verificar se é uma query (não mutation)
+        const isQuery = await isQueryRequest(request);
+        if (isQuery) {
+          // Criar uma versão GET equivalente para cache
+          const url = new URL(request.url);
+          const body = await request.clone().text();
+          const parsed = JSON.parse(body);
+          
+          // Criar URL com query como parâmetro para cache
+          const cacheUrl = `${url.origin}${url.pathname}?query=${encodeURIComponent(parsed.query)}`;
+          if (parsed.variables) {
+            cacheUrl += `&variables=${encodeURIComponent(JSON.stringify(parsed.variables))}`;
+          }
+          
+          const cacheRequest = new Request(cacheUrl, {
+            method: 'GET',
+            headers: request.headers
+          });
+          
+          cache.put(cacheRequest, networkResponse.clone());
+        }
       }
       return networkResponse;
     }
@@ -110,8 +132,32 @@ async function handleGraphQLRequest(request) {
   } catch (error) {
     console.log('[SW] Network failed for GraphQL, trying cache...');
     
-    // Fallback para cache se a rede falhar
-    const cachedResponse = await cache.match(request);
+    // Para requisições POST, tentar encontrar no cache usando GET equivalente
+    let cachedResponse;
+    if (request.method === 'POST') {
+      try {
+        const url = new URL(request.url);
+        const body = await request.clone().text();
+        const parsed = JSON.parse(body);
+        
+        let cacheUrl = `${url.origin}${url.pathname}?query=${encodeURIComponent(parsed.query)}`;
+        if (parsed.variables) {
+          cacheUrl += `&variables=${encodeURIComponent(JSON.stringify(parsed.variables))}`;
+        }
+        
+        const cacheRequest = new Request(cacheUrl, {
+          method: 'GET',
+          headers: request.headers
+        });
+        
+        cachedResponse = await cache.match(cacheRequest);
+      } catch (e) {
+        // Ignorar erro de parsing
+      }
+    } else {
+      cachedResponse = await cache.match(request);
+    }
+    
     if (cachedResponse) {
       console.log('[SW] Serving GraphQL from cache');
       return cachedResponse;

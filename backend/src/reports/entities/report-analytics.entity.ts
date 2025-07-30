@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, Index } from 'typeorm';
+import { ObjectType, Field, ID, registerEnumType } from '@nestjs/graphql';
 import { Report } from './report.entity';
 import { User } from '../../auth/entities/user.entity';
 
@@ -16,29 +17,46 @@ export enum ExportFormat {
   CSV = 'csv',
 }
 
+// Register enums for GraphQL
+registerEnumType(AnalyticsEventType, {
+  name: 'AnalyticsEventType',
+});
+
+registerEnumType(ExportFormat, {
+  name: 'AnalyticsExportFormat',
+});
+
+@ObjectType()
 @Entity('report_analytics')
 @Index(['reportId', 'eventType'])
 @Index(['reportId', 'createdAt'])
 @Index(['userId', 'createdAt'])
 export class ReportAnalytics {
+  @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Field(() => AnalyticsEventType)
   @Column({ type: 'varchar', length: 20 })
   eventType: AnalyticsEventType;
 
+  @Field(() => ExportFormat, { nullable: true })
   @Column({ type: 'varchar', length: 20, nullable: true })
   exportFormat: ExportFormat;
 
+  @Field({ nullable: true })
   @Column({ type: 'int', nullable: true })
   executionTime: number; // em millisegundos
 
+  @Field({ nullable: true })
   @Column({ type: 'int', nullable: true })
   recordCount: number;
 
+  @Field(() => String, { nullable: true })
   @Column({ type: 'json', nullable: true })
   filters: any[];
 
+  @Field(() => String, { nullable: true })
   @Column({ type: 'json', nullable: true })
   metadata: {
     userAgent?: string;
@@ -52,23 +70,29 @@ export class ReportAnalytics {
     errorMessage?: string; // para eventos com erro
   };
 
+  @Field(() => Report)
   @ManyToOne(() => Report, report => report.analytics, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'report_id' })
   report: Report;
 
+  @Field()
   @Column({ name: 'report_id' })
   reportId: string;
 
+  @Field(() => User)
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'user_id' })
   user: User;
 
+  @Field()
   @Column({ name: 'user_id' })
   userId: string;
 
+  @Field()
   @CreateDateColumn()
   createdAt: Date;
 
+  @Field()
   @UpdateDateColumn()
   updatedAt: Date;
 

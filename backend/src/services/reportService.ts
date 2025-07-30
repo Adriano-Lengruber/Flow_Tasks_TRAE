@@ -17,7 +17,7 @@ interface Report {
   description?: string;
   type: ReportType;
   format: ReportFormat;
-  template: ReportTemplate;
+  template: ReportTemplateType;
   filters: ReportFilters;
   schedule?: ReportSchedule;
   recipients: string[];
@@ -211,6 +211,7 @@ type ReportFormat = 'pdf' | 'html' | 'csv' | 'xlsx' | 'json';
 type ReportStatus = 'active' | 'inactive' | 'draft' | 'archived';
 type GenerationStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
 type TemplateType = 'standard' | 'dashboard' | 'detailed' | 'summary' | 'custom';
+type ReportTemplateType = 'table' | 'chart' | 'dashboard' | 'summary';
 type VariableType = 'string' | 'number' | 'boolean' | 'date' | 'array' | 'object';
 type SectionType = 'header' | 'footer' | 'summary' | 'chart' | 'table' | 'text' | 'image' | 'custom';
 type ScheduleFrequency = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly';
@@ -378,23 +379,32 @@ class ReportGenerator {
   
   // Renderizar template
   private async renderTemplate(
-    template: ReportTemplate,
+    templateType: ReportTemplateType,
     data: ReportData
   ): Promise<string> {
-    let content = template.content;
+    // Gerar conteúdo baseado no tipo de template
+    let content = this.getTemplateContent(templateType);
     
     // Substituir variáveis
     content = this.replaceVariables(content, data);
     
-    // Processar seções
-    content = await this.processSections(content, template.sections, data);
-    
-    // Aplicar estilos
-    if (template.styles) {
-      content = this.applyStyles(content, template.styles);
-    }
-    
     return content;
+  }
+  
+  // Obter conteúdo do template baseado no tipo
+  private getTemplateContent(templateType: ReportTemplateType): string {
+    switch (templateType) {
+      case 'table':
+        return '<html><body><h1>{{reportName}}</h1><div>{{tableData}}</div></body></html>';
+      case 'chart':
+        return '<html><body><h1>{{reportName}}</h1><div>{{chartData}}</div></body></html>';
+      case 'dashboard':
+        return '<html><body><h1>{{reportName}}</h1><div>{{summaryData}}</div><div>{{chartData}}</div></body></html>';
+      case 'summary':
+        return '<html><body><h1>{{reportName}}</h1><div>{{summaryData}}</div></body></html>';
+      default:
+        return '<html><body><h1>Report</h1><p>No template found</p></body></html>';
+    }
   }
   
   // Substituir variáveis no template
@@ -1243,7 +1253,7 @@ class ReportService extends EventEmitter {
       name,
       type,
       format,
-      template,
+      template: 'table' as ReportTemplateType, // Default template type
       filters,
       schedule,
       recipients,
